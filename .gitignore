@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# Native build artifacts
+android/
+ios/
+
+# Logs & temp
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment & IDE
+.env*
+.DS_Store
+*.pem
+.vscode/
+.idea/
+
+# Large audio files (hosted on GitHub Releases)
+audios/
