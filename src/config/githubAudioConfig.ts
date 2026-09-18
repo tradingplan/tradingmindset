@@ -8,7 +8,7 @@
  * 4. Ajuste os campos 'owner', 'repo' e 'tag' abaixo.
  */
 export const GITHUB_AUDIO_CONFIG = {
-  owner: 'seu-usuario', // Substitua pelo seu usuário do GitHub
+  owner: 'tradingplan', // Substitua pelo seu usuário do GitHub
   repo: 'tradingmindset', // Nome do repositório
   tag: 'v1.0.0', // Tag do Release onde os MP3 foram anexados
 

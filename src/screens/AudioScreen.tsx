@@ -102,8 +102,10 @@ export const AudioScreen: React.FC = () => {
         return <Moon size={14} color={Colors.purple} />;
       case 'trading_zone_book':
         return <BookOpen size={14} color={Colors.amber} />;
+      case 'auto_hypnosis':
+        return <Sparkles size={14} color={Colors.cyan} />;
       default:
-        return <Sparkles size={14} color={Colors.textPrimary} />;
+        return <Zap size={14} color={Colors.textPrimary} />;
     }
   };
 

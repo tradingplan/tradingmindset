@@ -15,10 +15,17 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.tradingplan.tradingmindset",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0B0E14"
-      }
+      },
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -27,6 +34,11 @@
     "scheme": "tradingmindset",
     "plugins": [
       "expo-audio"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "c82bbe26-ef76-445c-aad0-23caa8146448"
+      }
+    }
   }
 }

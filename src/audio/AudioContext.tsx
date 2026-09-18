@@ -4,7 +4,7 @@ import Constants from 'expo-constants';
 import { createAudioPlayer, setAudioModeAsync, AudioPlayer, AudioStatus } from 'expo-audio';
 import { AudioTrack } from '../types';
 import { AUDIO_CATALOG } from './audioCatalog';
-import { getPlayableTrackUri } from './offlineAudioStore';
+import { getPlayableTrackUri, cleanInvalidCachedFiles, getRemoteTrackUrl } from './offlineAudioStore';
 
 interface AudioContextType {
   currentTrack: AudioTrack | null;
@@ -113,9 +113,10 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const sleepTimerTimeoutRef = useRef<any>(null);
 
   useEffect(() => {
-    // Configure Expo Audio mode for background playback
+    // Configure Expo Audio mode for background playback & clean any corrupt cache
     const setupAudio = async () => {
       try {
+        await cleanInvalidCachedFiles();
         await setAudioModeAsync({
           playsInSilentMode: true,
           shouldPlayInBackground: true,
@@ -161,12 +162,13 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     if (Platform.OS === 'web') {
       try {
+        const webUri = await getPlayableTrackUri(track);
         if (!webAudioRef.current && typeof window !== 'undefined') {
           webAudioRef.current = new (window as any).Audio();
         }
         const audio = webAudioRef.current;
         if (audio) {
-          audio.src = track.sourceUri;
+          audio.src = webUri;
           audio.playbackRate = playbackRate;
           audio.currentTime = 0;
           
@@ -213,6 +215,9 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
 
         const sub = (player as any).addListener('playbackStatusUpdate', (status: AudioStatus) => {
+          if (status.error) {
+            console.warn('Expo Audio status error:', status.error);
+          }
           if (status.isLoaded) {
             setPositionSeconds(Math.floor(status.currentTime));
             if (status.duration && status.duration > 0) {

@@ -53,7 +53,8 @@ export type AudioCategory =
   | 'binaural_focus'
   | 'post_loss'
   | 'decompression'
-  | 'trading_zone_book';
+  | 'trading_zone_book'
+  | 'auto_hypnosis';
 
 export interface AudioTrack {
   id: string;
