@@ -54,7 +54,8 @@ export type AudioCategory =
   | 'post_loss'
   | 'decompression'
   | 'trading_zone_book'
-  | 'auto_hypnosis';
+  | 'auto_hypnosis'
+  | 'emotional_consistency';
 
 export interface AudioTrack {
   id: string;
@@ -87,3 +88,69 @@ export interface SOSEvent {
   durationSeconds: number;
   reason?: string;
 }
+
+export type ProtocolSubTab = 'pre' | 'sniper' | 'post' | 'diretrizes' | 'gold' | 'history';
+
+export interface QuantLevel {
+  id: string;
+  name: string;
+  badge: string;
+  whatIs: string;
+  role: string;
+  color: string;
+}
+
+export interface GEXRegime {
+  id: 'long_gamma' | 'short_gamma';
+  title: string;
+  badge: string;
+  formula: string;
+  mechanics: string;
+  priceBehavior: string;
+  howToBuy: string;
+  howToSell: string;
+  invalidation: string;
+  color: string;
+}
+
+export interface AssetDirective {
+  id: 'gold' | 'hk50' | 'sp500';
+  name: string;
+  symbol: string;
+  flag: string;
+  whatToLook: string[];
+  whenToBuy: string[];
+  whenToSell: string[];
+}
+
+export interface GoldManualChapter {
+  id: string;
+  partId: string;
+  chapterNumber: number;
+  title: string;
+  summary: string;
+  keyTakeaways: string[];
+  contentSections: {
+    title: string;
+    text?: string;
+    table?: {
+      headers: string[];
+      rows: string[][];
+    };
+    callout?: {
+      type: 'concept' | 'warning' | 'gold_analyst' | 'case_study';
+      title: string;
+      text: string;
+    };
+  }[];
+}
+
+export interface GoldManualPart {
+  id: string;
+  number: string;
+  title: string;
+  subtitle: string;
+  dominationPoints: string[];
+  chapters: GoldManualChapter[];
+}
+

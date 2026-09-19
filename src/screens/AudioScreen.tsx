@@ -32,6 +32,7 @@ import {
   Moon,
   Download,
   Check,
+  Brain,
 } from 'lucide-react-native';
 
 export const AudioScreen: React.FC = () => {
@@ -104,6 +105,8 @@ export const AudioScreen: React.FC = () => {
         return <BookOpen size={14} color={Colors.amber} />;
       case 'auto_hypnosis':
         return <Sparkles size={14} color={Colors.cyan} />;
+      case 'emotional_consistency':
+        return <Brain size={14} color={Colors.emeraldLight} />;
       default:
         return <Zap size={14} color={Colors.textPrimary} />;
     }

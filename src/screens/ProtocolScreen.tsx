@@ -18,7 +18,7 @@ import {
   calculateDisciplineScore,
   getDisciplineHistory,
 } from '../storage/disciplineStore';
-import { DailyProtocolState, HistoryDayScore } from '../types';
+import { DailyProtocolState, HistoryDayScore, ProtocolSubTab } from '../types';
 import * as Haptics from 'expo-haptics';
 import {
   CheckCircle2,
@@ -34,12 +34,15 @@ import {
   TrendingUp,
   ShieldCheck,
   BookOpen,
+  Compass,
+  Award,
+  Layers,
 } from 'lucide-react-native';
-
-type SubTab = 'pre' | 'sniper' | 'post' | 'history';
+import { QuantGuidelinesView } from '../components/protocols/QuantGuidelinesView';
+import { GoldExpertManualView } from '../components/protocols/GoldExpertManualView';
 
 export const ProtocolScreen: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<SubTab>('pre');
+  const [activeTab, setActiveTab] = useState<ProtocolSubTab>('pre');
   const [protocol, setProtocol] = useState<DailyProtocolState | null>(null);
   const [history, setHistory] = useState<HistoryDayScore[]>([]);
   const [isSavedRecently, setIsSavedRecently] = useState(false);
@@ -61,6 +64,11 @@ export const ProtocolScreen: React.FC = () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       } catch {}
     }
+  };
+
+  const handleTabChange = (tab: ProtocolSubTab) => {
+    triggerHaptic();
+    setActiveTab(tab);
   };
 
   if (!protocol) {
@@ -148,48 +156,75 @@ export const ProtocolScreen: React.FC = () => {
     <View style={styles.container}>
       <Header score={currentScore} />
 
-      {/* Protocol Sub-tabs Navigation */}
-      <View style={styles.subTabsContainer}>
-        <TouchableOpacity
-          style={[styles.subTabBtn, activeTab === 'pre' && styles.subTabBtnActive]}
-          onPress={() => setActiveTab('pre')}
+      {/* Protocol Sub-tabs Navigation (Horizontal Scrollable) */}
+      <View style={styles.subTabsWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.subTabsContainer}
         >
-          <Sunrise size={16} color={activeTab === 'pre' ? Colors.cyan : Colors.textMuted} />
-          <Text style={[styles.subTabText, activeTab === 'pre' && styles.subTabTextActive]}>
-            Pré-Mercado
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.subTabBtn, activeTab === 'pre' && styles.subTabBtnActivePre]}
+            onPress={() => handleTabChange('pre')}
+          >
+            <Sunrise size={15} color={activeTab === 'pre' ? Colors.cyan : Colors.textMuted} />
+            <Text style={[styles.subTabText, activeTab === 'pre' && styles.subTabTextActivePre]}>
+              Pré-Mercado
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.subTabBtn, activeTab === 'sniper' && styles.subTabBtnActive]}
-          onPress={() => setActiveTab('sniper')}
-        >
-          <Crosshair size={16} color={activeTab === 'sniper' ? Colors.emerald : Colors.textMuted} />
-          <Text style={[styles.subTabText, activeTab === 'sniper' && styles.subTabTextActive]}>
-            Sniper Entry
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.subTabBtn, activeTab === 'sniper' && styles.subTabBtnActiveSniper]}
+            onPress={() => handleTabChange('sniper')}
+          >
+            <Crosshair size={15} color={activeTab === 'sniper' ? Colors.emerald : Colors.textMuted} />
+            <Text style={[styles.subTabText, activeTab === 'sniper' && styles.subTabTextActiveSniper]}>
+              Sniper Entry
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.subTabBtn, activeTab === 'post' && styles.subTabBtnActive]}
-          onPress={() => setActiveTab('post')}
-        >
-          <Moon size={16} color={activeTab === 'post' ? Colors.purple : Colors.textMuted} />
-          <Text style={[styles.subTabText, activeTab === 'post' && styles.subTabTextActive]}>
-            Pós-Mercado
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.subTabBtn, activeTab === 'post' && styles.subTabBtnActivePost]}
+            onPress={() => handleTabChange('post')}
+          >
+            <Moon size={15} color={activeTab === 'post' ? Colors.purple : Colors.textMuted} />
+            <Text style={[styles.subTabText, activeTab === 'post' && styles.subTabTextActivePost]}>
+              Pós-Mercado
+            </Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.subTabBtn, activeTab === 'history' && styles.subTabBtnActive]}
-          onPress={() => setActiveTab('history')}
-        >
-          <TrendingUp size={16} color={activeTab === 'history' ? Colors.amber : Colors.textMuted} />
-          <Text style={[styles.subTabText, activeTab === 'history' && styles.subTabTextActive]}>
-            Histórico
-          </Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.subTabBtn, activeTab === 'diretrizes' && styles.subTabBtnActiveDiretrizes]}
+            onPress={() => handleTabChange('diretrizes')}
+          >
+            <Compass size={15} color={activeTab === 'diretrizes' ? Colors.cyan : Colors.textMuted} />
+            <Text style={[styles.subTabText, activeTab === 'diretrizes' && styles.subTabTextActiveDiretrizes]}>
+              Diretrizes Quant
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.subTabBtn, activeTab === 'gold' && styles.subTabBtnActiveGold]}
+            onPress={() => handleTabChange('gold')}
+          >
+            <Award size={15} color={activeTab === 'gold' ? Colors.amber : Colors.textMuted} />
+            <Text style={[styles.subTabText, activeTab === 'gold' && styles.subTabTextActiveGold]}>
+              Gold Perito
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.subTabBtn, activeTab === 'history' && styles.subTabBtnActiveHistory]}
+            onPress={() => handleTabChange('history')}
+          >
+            <TrendingUp size={15} color={activeTab === 'history' ? Colors.amber : Colors.textMuted} />
+            <Text style={[styles.subTabText, activeTab === 'history' && styles.subTabTextActiveHistory]}>
+              Histórico
+            </Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
+
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* TAB 1: PRÉ-MERCADO */}
@@ -326,6 +361,38 @@ export const ProtocolScreen: React.FC = () => {
                 </View>
               </TouchableOpacity>
             </Card>
+
+            {/* Quick Access to Protocols */}
+            <View style={styles.quickAccessSection}>
+              <Text style={styles.quickAccessLabel}>MANUAIS & DIRETRIZES DE SUPORTE</Text>
+              <View style={styles.quickAccessRow}>
+                <TouchableOpacity
+                  style={styles.quickAccessBtn}
+                  onPress={() => handleTabChange('diretrizes')}
+                  activeOpacity={0.8}
+                >
+                  <Compass size={18} color={Colors.cyan} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.quickAccessBtnTitle}>Diretrizes Quant</Text>
+                    <Text style={styles.quickAccessBtnSub}>Walls, GEX & Regimes</Text>
+                  </View>
+                  <ChevronRight size={16} color={Colors.cyan} />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.quickAccessBtn}
+                  onPress={() => handleTabChange('gold')}
+                  activeOpacity={0.8}
+                >
+                  <Award size={18} color={Colors.amber} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.quickAccessBtnTitle}>Gold Perito</Text>
+                    <Text style={styles.quickAccessBtnSub}>Manual Institucional</Text>
+                  </View>
+                  <ChevronRight size={16} color={Colors.amber} />
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
         )}
 
@@ -470,6 +537,19 @@ export const ProtocolScreen: React.FC = () => {
                 </View>
               </View>
             </Card>
+
+            {/* Quick Consultation */}
+            <TouchableOpacity
+              style={styles.sniperConsultBox}
+              onPress={() => handleTabChange('diretrizes')}
+              activeOpacity={0.8}
+            >
+              <Compass size={18} color={Colors.cyan} />
+              <Text style={styles.sniperConsultText}>
+                Checar se o preço está próximo de Put Wall ou Call Wall nas <Text style={{ fontWeight: Typography.fontWeight.bold, color: Colors.cyan }}>Diretrizes Quant</Text>
+              </Text>
+              <ChevronRight size={16} color={Colors.cyan} />
+            </TouchableOpacity>
           </View>
         )}
 
@@ -583,7 +663,21 @@ export const ProtocolScreen: React.FC = () => {
           </View>
         )}
 
-        {/* TAB 4: HISTÓRICO & DIÁRIO */}
+        {/* TAB 4: DIRETRIZES QUANT */}
+        {activeTab === 'diretrizes' && (
+          <View style={styles.tabContent}>
+            <QuantGuidelinesView />
+          </View>
+        )}
+
+        {/* TAB 5: GOLD PERITO OPERACIONAL */}
+        {activeTab === 'gold' && (
+          <View style={styles.tabContent}>
+            <GoldExpertManualView />
+          </View>
+        )}
+
+        {/* TAB 6: HISTÓRICO & DIÁRIO */}
         {activeTab === 'history' && (
           <View style={styles.tabContent}>
             <View style={styles.sectionHeader}>
@@ -647,35 +741,127 @@ const styles = StyleSheet.create({
     color: Colors.textSecondary,
     fontSize: Typography.fontSize.sm,
   },
-  subTabsContainer: {
-    flexDirection: 'row',
+  subTabsWrapper: {
     backgroundColor: Colors.backgroundSecondary,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
+  },
+  subTabsContainer: {
+    flexDirection: 'row',
     paddingHorizontal: Spacing.sm,
+    gap: 4,
   },
   subTabBtn: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
+    paddingHorizontal: 12,
     gap: 6,
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
   },
-  subTabBtnActive: {
+  subTabBtnActivePre: {
     borderBottomColor: Colors.cyan,
+  },
+  subTabBtnActiveSniper: {
+    borderBottomColor: Colors.emerald,
+  },
+  subTabBtnActivePost: {
+    borderBottomColor: Colors.purple,
+  },
+  subTabBtnActiveDiretrizes: {
+    borderBottomColor: Colors.cyan,
+  },
+  subTabBtnActiveGold: {
+    borderBottomColor: Colors.amber,
+  },
+  subTabBtnActiveHistory: {
+    borderBottomColor: Colors.amber,
   },
   subTabText: {
     color: Colors.textMuted,
     fontSize: Typography.fontSize.xs,
     fontWeight: Typography.fontWeight.medium,
   },
-  subTabTextActive: {
-    color: Colors.textPrimary,
+  subTabTextActivePre: {
+    color: Colors.cyan,
     fontWeight: Typography.fontWeight.bold,
   },
+  subTabTextActiveSniper: {
+    color: Colors.emerald,
+    fontWeight: Typography.fontWeight.bold,
+  },
+  subTabTextActivePost: {
+    color: Colors.purple,
+    fontWeight: Typography.fontWeight.bold,
+  },
+  subTabTextActiveDiretrizes: {
+    color: Colors.cyan,
+    fontWeight: Typography.fontWeight.bold,
+  },
+  subTabTextActiveGold: {
+    color: Colors.amber,
+    fontWeight: Typography.fontWeight.bold,
+  },
+  subTabTextActiveHistory: {
+    color: Colors.amber,
+    fontWeight: Typography.fontWeight.bold,
+  },
+  quickAccessSection: {
+    marginTop: Spacing.sm,
+    marginBottom: Spacing.md,
+  },
+  quickAccessLabel: {
+    color: Colors.textMuted,
+    fontSize: 10,
+    fontWeight: Typography.fontWeight.bold,
+    letterSpacing: 0.8,
+    marginBottom: Spacing.xs,
+  },
+  quickAccessRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+  },
+  quickAccessBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs + 2,
+    backgroundColor: Colors.card,
+    padding: Spacing.sm + 2,
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  quickAccessBtnTitle: {
+    color: Colors.textPrimary,
+    fontSize: Typography.fontSize.xs,
+    fontWeight: Typography.fontWeight.bold,
+  },
+  quickAccessBtnSub: {
+    color: Colors.textMuted,
+    fontSize: Typography.fontSize.xs - 2,
+    marginTop: 1,
+  },
+  sniperConsultBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    backgroundColor: `${Colors.cyan}10`,
+    borderWidth: 1,
+    borderColor: `${Colors.cyan}40`,
+    padding: Spacing.sm + 4,
+    borderRadius: BorderRadius.md,
+    marginTop: Spacing.sm,
+  },
+  sniperConsultText: {
+    color: Colors.textSecondary,
+    fontSize: Typography.fontSize.xs,
+    lineHeight: 18,
+    flex: 1,
+  },
+
   scrollContent: {
     padding: Spacing.md,
     paddingBottom: 150,

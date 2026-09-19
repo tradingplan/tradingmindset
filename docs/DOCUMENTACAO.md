@@ -135,6 +135,7 @@ O arquivo central onde todo o acervo de áudio é registrado é:
 | `'decompression'` | Descompressão & Sono Reparador | Meditações para desligar do mercado |
 | `'trading_zone_book'` | Audiolivro Trading in the Zone | 12 capítulos da obra de Mark Douglas |
 | `'auto_hypnosis'` | Auto-Hipnose & Reprogramação | Sessões de transe para reprogramação de crenças financeiras |
+| `'emotional_consistency'` | Consistência Emocional | Esquemas emocionais, autoimagem e superação do luto no mercado (Thais) |
 
 ### Passo a Passo: Adicionando um Novo Áudio
 1. Acesse o seu repositório no GitHub: `https://github.com/tradingplan/tradingmindset/releases`.
