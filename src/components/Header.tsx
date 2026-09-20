@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, BorderRadius } from '../theme';
 import { Flame, ShieldCheck, Activity, Award, Bell } from 'lucide-react-native';
@@ -63,13 +63,17 @@ export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNav
     }
   };
 
+  const handlePressMarketStatus = () => {
+    Alert.alert('Status do Mercado', marketStatus.text);
+  };
+
   return (
     <View style={[styles.container, { paddingTop: topSafeAreaPadding }]}>
-      {/* Top Row: Title, Market Status & Alarms Button */}
+      {/* Top Row: Title, Compact Market Icon & Alarms Button */}
       <View style={styles.topRow}>
         <View style={styles.brandContainer}>
           <View style={styles.brandBadge}>
-            <Activity size={14} color={Colors.cyan} />
+            <Activity size={15} color={Colors.cyan} />
           </View>
           <View>
             <Text style={styles.brandTitle}>TRADING MINDSET</Text>
@@ -78,10 +82,16 @@ export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNav
         </View>
 
         <View style={styles.topRightActions}>
-          <View style={[styles.marketPill, { borderColor: marketStatus.color }]}>
-            <View style={[styles.statusDot, { backgroundColor: marketStatus.color }]} />
-            <Text style={[styles.marketText, { color: marketStatus.color }]}>{marketStatus.text}</Text>
-          </View>
+          {/* Compact Market Status Icon (Green = Open, Red/Muted = Closed, Amber = Pre) */}
+          <TouchableOpacity
+            style={[styles.marketIconBtn, { borderColor: marketStatus.color }]}
+            onPress={handlePressMarketStatus}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.marketIconInner, { backgroundColor: marketStatus.color }]}>
+              <View style={[styles.marketPulseRing, { borderColor: marketStatus.color }]} />
+            </View>
+          </TouchableOpacity>
 
           {/* Alarm Quick Bell Button */}
           <TouchableOpacity
@@ -89,7 +99,7 @@ export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNav
             onPress={() => setIsAlarmsModalVisible(true)}
             activeOpacity={0.7}
           >
-            <Bell size={16} color={activeAlarmsCount > 0 ? Colors.cyan : Colors.textMuted} />
+            <Bell size={18} color={activeAlarmsCount > 0 ? Colors.cyan : Colors.textMuted} />
             {activeAlarmsCount > 0 && (
               <View style={styles.bellBadge}>
                 <Text style={styles.bellBadgeText}>{activeAlarmsCount}</Text>
@@ -198,55 +208,60 @@ const styles = StyleSheet.create({
   topRightActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.xs,
+    gap: Spacing.sm,
+  },
+  marketIconBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: BorderRadius.full,
+    backgroundColor: 'rgba(11, 14, 20, 0.8)',
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  marketIconInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  marketPulseRing: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 1,
+    opacity: 0.4,
   },
   bellHeaderBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: BorderRadius.sm,
-    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+    width: 36,
+    height: 36,
+    borderRadius: BorderRadius.md,
+    backgroundColor: 'rgba(6, 182, 212, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(6, 182, 212, 0.25)',
+    borderColor: 'rgba(6, 182, 212, 0.35)',
     position: 'relative',
   },
   bellBadge: {
     position: 'absolute',
-    top: -3,
-    right: -3,
+    top: -4,
+    right: -4,
     backgroundColor: Colors.cyan,
-    borderRadius: 8,
-    minWidth: 14,
-    height: 14,
+    borderRadius: 9,
+    minWidth: 16,
+    height: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 2,
+    paddingHorizontal: 3,
+    borderWidth: 1.5,
+    borderColor: Colors.backgroundSecondary,
   },
   bellBadgeText: {
     color: '#000',
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: Typography.fontWeight.bold,
-  },
-  marketPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: BorderRadius.full,
-    borderWidth: 1,
-    backgroundColor: 'rgba(11, 14, 20, 0.6)',
-    gap: 6,
-  },
-  statusDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  marketText: {
-    fontSize: 10,
-    fontWeight: Typography.fontWeight.bold,
-    letterSpacing: 0.5,
   },
   metricsRow: {
     flexDirection: 'row',
