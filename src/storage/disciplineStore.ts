@@ -61,16 +61,19 @@ export const DEFAULT_GOLDEN_RULES: GoldenRule[] = [
 ];
 
 export function calculateDisciplineScore(
-  pre: DailyProtocolState['preMarket'],
-  sniper: DailyProtocolState['sniperCheck'],
-  post: DailyProtocolState['postMarket']
+  pre?: DailyProtocolState['preMarket'],
+  sniper?: DailyProtocolState['sniperCheck'],
+  post?: DailyProtocolState['postMarket']
 ): number {
+  if (!pre || !sniper || !post) return 100;
   let score = 0;
 
   // Pré-Mercado (30 pontos)
   if (pre.checkedNews) score += 10;
   if (pre.commitmentAffirmed) score += 10;
-  if (pre.maxLossValue.trim().length > 0) score += 10;
+  if (pre.maxLossValue && typeof pre.maxLossValue === 'string' && pre.maxLossValue.trim().length > 0) {
+    score += 10;
+  }
 
   // Sniper Entry (30 pontos)
   if (sniper.candleClosed) score += 10;

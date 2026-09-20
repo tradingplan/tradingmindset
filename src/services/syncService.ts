@@ -2,6 +2,7 @@ import { supabase, isSupabaseConfigured } from './supabase';
 import { DailyProtocolState, HistoryDayScore } from '../types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../storage/storageKeys';
+import { DEFAULT_PRE_MARKET, DEFAULT_SNIPER, DEFAULT_POST_MARKET } from '../storage/disciplineStore';
 
 export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline' | 'unauthenticated';
 
@@ -33,9 +34,9 @@ export function protocolToDbRecord(protocol: DailyProtocolState, userId?: string
   return {
     ...(userId ? { user_id: userId } : {}),
     date: protocol.date,
-    pre_market: protocol.preMarket,
-    sniper_check: protocol.sniperCheck,
-    post_market: protocol.postMarket,
+    pre_market: protocol.preMarket || DEFAULT_PRE_MARKET,
+    sniper_check: protocol.sniperCheck || DEFAULT_SNIPER,
+    post_market: protocol.postMarket || DEFAULT_POST_MARKET,
     discipline_score: protocol.postMarket?.disciplineScore ?? 100,
     mental_note: protocol.postMarket?.mentalNote ?? '',
     is_locked: protocol.isLocked ?? false,
@@ -47,12 +48,19 @@ export function protocolToDbRecord(protocol: DailyProtocolState, userId?: string
 export function dbRecordToProtocol(row: any): DailyProtocolState {
   return {
     date: row.date,
-    preMarket: row.pre_market || {},
-    sniperCheck: row.sniper_check || {},
+    preMarket: {
+      ...DEFAULT_PRE_MARKET,
+      ...(row.pre_market || {}),
+    },
+    sniperCheck: {
+      ...DEFAULT_SNIPER,
+      ...(row.sniper_check || {}),
+    },
     postMarket: {
-      ...row.post_market,
-      mentalNote: row.mental_note ?? row.post_market?.mentalNote ?? '',
-      disciplineScore: row.discipline_score ?? row.post_market?.disciplineScore ?? 100,
+      ...DEFAULT_POST_MARKET,
+      ...(row.post_market || {}),
+      mentalNote: row.mental_note ?? row.post_market?.mentalNote ?? DEFAULT_POST_MARKET.mentalNote,
+      disciplineScore: row.discipline_score ?? row.post_market?.disciplineScore ?? DEFAULT_POST_MARKET.disciplineScore,
     },
     isLocked: row.is_locked ?? false,
     completedAt: row.completed_at || undefined,
