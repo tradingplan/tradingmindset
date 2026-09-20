@@ -35,7 +35,12 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "scheme": "tradingmindset",
+    "updates": {
+      "url": "https://u.expo.dev/c82bbe26-ef76-445c-aad0-23caa8146448"
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "plugins": [
       "expo-audio",
       [
@@ -44,7 +49,8 @@
           "icon": "./assets/icon.png",
           "color": "#06B6D4"
         }
-      ]
+      ],
+      "expo-updates"
     ],
     "extra": {
       "eas": {
