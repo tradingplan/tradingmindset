@@ -15,6 +15,7 @@ Este documento é o guia definitivo de arquitetura, desenvolvimento, gerenciamen
 7. [Publicação Oficial na Google Play Store (Produção)](#7-publicação-oficial-na-google-play-store-produção)
 8. [Boas Práticas e Resolução de Problemas (Troubleshooting)](#8-boas-práticas-e-resolução-de-problemas-troubleshooting)
 9. [Como Adicionar Novos Documentos, Protocolos e Formatos Recomendados](#9-como-adicionar-novos-documentos-protocolos-e-formatos-recomendados)
+10. [Sistema de Alarmes, Lembretes e Gestão de Notificações Locais](#10-sistema-de-alarmes-lembretes-e-gestão-de-notificações-locais)
 
 ---
 
@@ -365,4 +366,101 @@ Coloque o arquivo na pasta `assets/docs/` e abra usando `expo-sharing` ou biblio
 ---
 
 > 🚀 **Dica de Ouro:** Para tudo o que exige **ação e preenchimento diário** (ex: diário de trade, checagem pré-mercado), utilize **JSON/TypeScript**. Para materiais de **leitura e estudo profundo**, utilize **PDF hospedado no Release** ou **Markdown integrado no app**.
+
+---
+
+## 10. Sistema de Alarmes, Lembretes e Gestão de Notificações Locais
+
+O aplicativo conta com uma infraestrutura completa de **Alarmes Programáveis, Alertas de Notícias Macroeconômicas e Timers de Mesa**, executados **100% de forma local no dispositivo** sem necessidade de conexão com a internet ou servidores externos.
+
+### 🏛️ 1. Arquitetura do Sistema de Alarmes
+
+O módulo de alarmes é dividido em 4 camadas bem definidas:
+
+1. **Camada de Tipos (`src/types/index.ts`):**
+   - `TradingAlarm`: Representa a rotina ou evento (id, horário `HH:mm`, dias da semana `[1..5]`, categoria, som, ação de destino e status ativo/inativo).
+   - `MacroNewsPreset`: Presets rápidos de notícias (Payroll, CPI, FOMC, Copom Selic, etc.).
+   - `NotificationActionTarget`: Destino de navegação (`protocol_pre`, `protocol_post`, `audioteca`, `sos_tilt`, `rules`, `none`).
+
+2. **Camada de Persistência (`src/storage/alarmStore.ts`):**
+   - Armazena a lista de alarmes no `@react-native-async-storage/async-storage` sob a chave `@tradingmindset:alarms_list`.
+   - Disponibiliza as rotinas padrão recomendadas de fábrica:
+     - `08:30` — Checklist Pré-Mercado & Foco
+     - `08:55` — Abertura Mercado Futuro B3 (Dólar & Mini-Índice)
+     - `10:25` — Abertura Wall Street (NYSE / Nasdaq)
+     - `12:30` — Pausa Tática & Respiração (Horário de Almoço)
+     - `17:30` — Checklist Pós-Mercado & Diário de Bordo
+
+3. **Camada de Serviço Nativo (`src/services/alarmService.ts`):**
+   - Integra com a biblioteca oficial `expo-notifications`.
+   - **Canais Android (Notification Channels):**
+     - `trading-alarms-high`: Canal de alta prioridade com som, vibração e banner na tela de bloqueio.
+     - `trading-news-urgent`: Canal de alerta crítico para eventos de volatilidade.
+     - `trading-timers-live`: Canal dedicado aos cronômetros de mesa (cool-down e pausas).
+   - **Agendamento de Rotinas Recorrentes:** Utiliza `SchedulableTriggerInputTypes.CALENDAR` mapeando os dias da semana (Segunda a Sexta) e horário exato.
+   - **Agendamento de Notícias (Alerta Duplo Inteligente):**
+     - *Alerta 1 (Aviso Prévio):* Dispara 10 a 15 minutos antes do horário da notícia (ex: 09:15 para o Payroll das 09:30), instruindo o trader a proteger stops ou zerar contratos.
+     - *Alerta 2 (Alerta Imediato):* Dispara no minuto exato (09:30) com aviso de alta volatilidade para evitar ordens a mercado impulsivas.
+   - **Sincronização Automática:** O método `syncAllAlarmsWithSystem()` garante que qualquer alteração de estado (ligar/desligar alarme) seja imediatamente refletida no agendador nativo do sistema operacional.
+
+4. **Camada de Interface (`src/components/alarms/AlarmsModal.tsx` & `src/components/Header.tsx`):**
+   - **Ícone de Sino no Topo do App:** Exibe um badge com a contagem de alarmes ativos no dia. Ao clicar, abre o modal de gerenciamento.
+   - **Aba "Rotinas Diárias":** Chaves liga/desliga instantâneas, visualização dos dias da semana e formulário para criar novos alarmes customizados com horário e ação vinculada.
+   - **Aba "Notícias Macro":** Cards dos principais eventos econômicos com botão de ativação em 1 toque para o pregão de hoje.
+   - **Aba "Timers Live (Mesa)":** Contador regressivo visual e sonoro para uso com o celular ao lado do monitor (Cool-down de 15 min pós-loss, pausa de 60 min anti-fadiga e respiração de 5 min).
+   - **Botão de Teste Imediato (3s):** Permite ao trader disparar uma notificação instantânea para validar volume, banner e vibração no aparelho.
+
+---
+
+### 📲 2. Permissões e Configurações no `app.json`
+
+Para garantir que o Android e o iOS permitam o disparo de notificações mesmo com o app minimizado ou aparelho bloqueado, o `app.json` inclui:
+
+```json
+"android": {
+  "permissions": [
+    "android.permission.POST_NOTIFICATIONS",
+    "android.permission.VIBRATE",
+    "android.permission.RECEIVE_BOOT_COMPLETED",
+    "android.permission.SCHEDULE_EXACT_ALARM"
+  ]
+},
+"plugins": [
+  "expo-audio",
+  [
+    "expo-notifications",
+    {
+      "icon": "./assets/icon.png",
+      "color": "#06B6D4"
+    }
+  ]
+]
+```
+
+---
+
+### 🔗 3. Deep Linking (Navegação ao Clicar na Notificação)
+
+Quando o trader toca em uma notificação emitida pelo aplicativo (ex: *"Checklist Pré-Mercado & Foco"*):
+1. O listener `Notifications.addNotificationResponseReceivedListener` configurado em `src/navigation/RootNavigator.tsx` intercepta a interação.
+2. Lê o payload `actionTarget` enviado na notificação.
+3. Direciona o aplicativo diretamente para a tela ou aba correspondente (`Protocol`, `Audioteca`, `SOSTilt`, `Rules`).
+
+---
+
+### 🛠️ 4. Como Adicionar Novos Presets de Notícias Econômicas
+
+Caso deseje adicionar novos eventos padrão à lista de 1 toque (ex: Vencimento de Opções, Taxa de Desemprego na Europa, etc.), basta editar o array `DEFAULT_MACRO_NEWS_PRESETS` em `src/storage/alarmStore.ts`:
+
+```typescript
+{
+  id: 'options_expiry',
+  name: 'Vencimento de Opções B3',
+  defaultTime: '16:30',
+  impact: 'high',
+  currency: 'BRL',
+  description: 'Exercício de opções sobre ações e índices. Forte distorção de fluxo e volatilidade no book.',
+  suggestedLeadTime: 15,
+}
+```
 

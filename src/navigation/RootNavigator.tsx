@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { RootTabParamList } from '../types';
+import { RootTabParamList, NotificationActionTarget } from '../types';
 import { Colors, Typography } from '../theme';
 import { ProtocolScreen } from '../screens/ProtocolScreen';
 import { AudioScreen } from '../screens/AudioScreen';
@@ -11,6 +11,9 @@ import { SOSTiltScreen } from '../screens/SOSTiltScreen';
 import { RulesScreen } from '../screens/RulesScreen';
 import { MiniPlayer } from '../components/MiniPlayer';
 import { AudioModal } from '../components/AudioModal';
+import * as Notifications from 'expo-notifications';
+import { initNotifications, syncAllAlarmsWithSystem } from '../services/alarmService';
+import { loadAlarms } from '../storage/alarmStore';
 import {
   ClipboardList,
   Headphones,
@@ -22,10 +25,43 @@ const Tab = createBottomTabNavigator<RootTabParamList>();
 
 export const RootNavigator: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const navigationRef = useNavigationContainerRef<RootTabParamList>();
   const bottomBarHeight = Platform.OS === 'ios' ? 88 : 60 + insets.bottom;
 
+  useEffect(() => {
+    // 1. Inicializar permissões e canais nativos
+    const setupAlarms = async () => {
+      await initNotifications();
+      const alarms = await loadAlarms();
+      await syncAllAlarmsWithSystem(alarms);
+    };
+    setupAlarms();
+
+    // 2. Listener para cliques em notificações
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      const data = response.notification.request.content.data;
+      const target = data?.actionTarget as NotificationActionTarget | undefined;
+
+      if (navigationRef.isReady() && target) {
+        if (target === 'protocol_pre' || target === 'protocol_post') {
+          navigationRef.navigate('Protocol');
+        } else if (target === 'audioteca') {
+          navigationRef.navigate('Audioteca');
+        } else if (target === 'sos_tilt') {
+          navigationRef.navigate('SOSTilt');
+        } else if (target === 'rules') {
+          navigationRef.navigate('Rules');
+        }
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <View style={styles.container}>
         <Tab.Navigator
           screenOptions={{

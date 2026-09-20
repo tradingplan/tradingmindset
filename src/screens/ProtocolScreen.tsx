@@ -154,7 +154,13 @@ export const ProtocolScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Header score={currentScore} />
+      <Header
+        score={currentScore}
+        onNavigateToTarget={(target) => {
+          if (target === 'protocol_pre') handleTabChange('pre');
+          else if (target === 'protocol_post') handleTabChange('post');
+        }}
+      />
 
       {/* Protocol Sub-tabs Navigation (Horizontal Scrollable) */}
       <View style={styles.subTabsWrapper}>

@@ -7,4 +7,6 @@ export const STORAGE_KEYS = {
   CURRENT_STREAK: '@tradingmindset:current_streak',
   AUDIO_FAVORITES: '@tradingmindset:audio_favorites',
   AUDIO_LAST_PLAYED: '@tradingmindset:audio_last_played',
+  ALARMS_LIST: '@tradingmindset:alarms_list',
+  ALARM_SETTINGS: '@tradingmindset:alarm_settings',
 };

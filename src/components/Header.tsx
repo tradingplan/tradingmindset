@@ -1,28 +1,46 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors, Typography, Spacing, BorderRadius } from '../theme';
-import { Flame, ShieldCheck, Activity, Award } from 'lucide-react-native';
+import { Flame, ShieldCheck, Activity, Award, Bell } from 'lucide-react-native';
 import { getStreakCount } from '../storage/disciplineStore';
+import { loadAlarms } from '../storage/alarmStore';
+import { AlarmsModal } from './alarms/AlarmsModal';
+import { NotificationActionTarget } from '../types';
 
 interface HeaderProps {
   score?: number;
   onPressScore?: () => void;
+  onNavigateToTarget?: (target: NotificationActionTarget) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore }) => {
+export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNavigateToTarget }) => {
   const [streak, setStreak] = useState(3);
+  const [activeAlarmsCount, setActiveAlarmsCount] = useState(0);
+  const [isAlarmsModalVisible, setIsAlarmsModalVisible] = useState(false);
   const [marketStatus, setMarketStatus] = useState({ text: 'PREGÃO ATIVO', color: Colors.emerald, open: true });
 
   useEffect(() => {
     loadStreak();
     checkMarketStatus();
-    const interval = setInterval(checkMarketStatus, 60000);
+    loadActiveAlarms();
+    const interval = setInterval(() => {
+      checkMarketStatus();
+      loadActiveAlarms();
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
   const loadStreak = async () => {
     const s = await getStreakCount();
     setStreak(s);
+  };
+
+  const loadActiveAlarms = async () => {
+    try {
+      const list = await loadAlarms();
+      const count = list.filter((a) => a.enabled).length;
+      setActiveAlarmsCount(count);
+    } catch {}
   };
 
   const checkMarketStatus = () => {
@@ -43,7 +61,7 @@ export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore }) => 
 
   return (
     <View style={styles.container}>
-      {/* Top Row: Title & Market Status */}
+      {/* Top Row: Title, Market Status & Alarms Button */}
       <View style={styles.topRow}>
         <View style={styles.brandContainer}>
           <View style={styles.brandBadge}>
@@ -55,11 +73,37 @@ export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore }) => 
           </View>
         </View>
 
-        <View style={[styles.marketPill, { borderColor: marketStatus.color }]}>
-          <View style={[styles.statusDot, { backgroundColor: marketStatus.color }]} />
-          <Text style={[styles.marketText, { color: marketStatus.color }]}>{marketStatus.text}</Text>
+        <View style={styles.topRightActions}>
+          <View style={[styles.marketPill, { borderColor: marketStatus.color }]}>
+            <View style={[styles.statusDot, { backgroundColor: marketStatus.color }]} />
+            <Text style={[styles.marketText, { color: marketStatus.color }]}>{marketStatus.text}</Text>
+          </View>
+
+          {/* Alarm Quick Bell Button */}
+          <TouchableOpacity
+            style={styles.bellHeaderBtn}
+            onPress={() => setIsAlarmsModalVisible(true)}
+            activeOpacity={0.7}
+          >
+            <Bell size={16} color={activeAlarmsCount > 0 ? Colors.cyan : Colors.textMuted} />
+            {activeAlarmsCount > 0 && (
+              <View style={styles.bellBadge}>
+                <Text style={styles.bellBadgeText}>{activeAlarmsCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
       </View>
+
+      {/* Alarms Modal */}
+      <AlarmsModal
+        visible={isAlarmsModalVisible}
+        onClose={() => {
+          setIsAlarmsModalVisible(false);
+          loadActiveAlarms();
+        }}
+        onNavigateToTarget={onNavigateToTarget}
+      />
 
       {/* Metrics Bar */}
       <View style={styles.metricsRow}>
@@ -146,6 +190,39 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: Typography.fontWeight.medium,
     letterSpacing: 0.5,
+  },
+  topRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+  },
+  bellHeaderBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(6, 182, 212, 0.25)',
+    position: 'relative',
+  },
+  bellBadge: {
+    position: 'absolute',
+    top: -3,
+    right: -3,
+    backgroundColor: Colors.cyan,
+    borderRadius: 8,
+    minWidth: 14,
+    height: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 2,
+  },
+  bellBadgeText: {
+    color: '#000',
+    fontSize: 8,
+    fontWeight: Typography.fontWeight.bold,
   },
   marketPill: {
     flexDirection: 'row',

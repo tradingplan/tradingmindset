@@ -154,3 +154,58 @@ export interface GoldManualPart {
   chapters: GoldManualChapter[];
 }
 
+export type AlarmCategory = 
+  | 'checklist_pre' 
+  | 'checklist_post' 
+  | 'market_bell' 
+  | 'news_macro' 
+  | 'pause_focus' 
+  | 'custom';
+
+export type AlarmSoundType = 'default' | 'bell' | 'chime' | 'warning' | 'calm';
+
+export type NotificationActionTarget = 
+  | 'protocol_pre' 
+  | 'protocol_post' 
+  | 'audioteca' 
+  | 'sos_tilt' 
+  | 'rules' 
+  | 'none';
+
+export interface TradingAlarm {
+  id: string;
+  title: string;
+  subtitle?: string;
+  time: string; // "HH:mm" (24h format, e.g. "08:30")
+  enabled: boolean;
+  days: number[]; // 0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sab. Ex: [1,2,3,4,5]
+  category: AlarmCategory;
+  sound: AlarmSoundType;
+  actionTarget: NotificationActionTarget;
+  isNewsAlarm?: boolean;
+  newsDate?: string; // YYYY-MM-DD for single-day news
+  leadTimeMinutes?: number; // e.g. 15 (warn 15 min before)
+  scheduledNotificationIds?: string[];
+  createdAt?: string;
+}
+
+export interface MacroNewsPreset {
+  id: string;
+  name: string;
+  defaultTime: string; // e.g. "09:30"
+  impact: 'high' | 'critical';
+  currency: 'USD' | 'BRL' | 'EUR';
+  description: string;
+  suggestedLeadTime: number; // in minutes (e.g. 15)
+}
+
+export interface ActiveDeskTimer {
+  id: string;
+  title: string;
+  type: 'cooldown_post_loss' | 'screen_pause' | 'custom_timer';
+  durationSeconds: number;
+  remainingSeconds: number;
+  isRunning: boolean;
+  startedAt?: number;
+}
+
