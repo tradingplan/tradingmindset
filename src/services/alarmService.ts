@@ -1,5 +1,4 @@
 import { Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { TradingAlarm, NotificationActionTarget } from '../types';
 
@@ -7,8 +6,24 @@ export const isExpoGo =
   Constants.executionEnvironment === ExecutionEnvironment.StoreClient ||
   (Constants as any).appOwnership === 'expo';
 
-// Configura o comportamento das notificações quando o app está em primeiro plano (apenas fora do Expo Go para evitar incompatibilidade)
-if (!isExpoGo && Platform.OS !== 'web') {
+/**
+ * Lazy import de expo-notifications para não disparar o erro de módulo no Expo Go SDK 53+
+ */
+export const getNotificationsModule = (): any => {
+  if (Platform.OS === 'web' || isExpoGo) {
+    return null;
+  }
+  try {
+    return require('expo-notifications');
+  } catch (err) {
+    console.warn('[Notifications] Could not load expo-notifications:', err);
+    return null;
+  }
+};
+
+// Configura o comportamento das notificações apenas fora do Expo Go
+const Notifications = getNotificationsModule();
+if (Notifications) {
   try {
     Notifications.setNotificationHandler({
       handleNotification: async () => ({
@@ -17,7 +32,7 @@ if (!isExpoGo && Platform.OS !== 'web') {
         shouldShowList: true,
         shouldPlaySound: true,
         shouldSetBadge: true,
-        priority: Notifications.AndroidNotificationPriority.MAX,
+        priority: Notifications.AndroidNotificationPriority?.MAX ?? 2,
       }),
     });
   } catch (err) {
@@ -35,16 +50,17 @@ export const ANDROID_CHANNELS = {
  * Inicializa permissões e canais de notificação no Android
  */
 export const initNotifications = async (): Promise<boolean> => {
-  if (Platform.OS === 'web' || isExpoGo) {
+  const notif = getNotificationsModule();
+  if (!notif) {
     return false;
   }
 
   try {
     // 1. Configurar Canais no Android
     if (Platform.OS === 'android') {
-      await Notifications.setNotificationChannelAsync(ANDROID_CHANNELS.ALARMS, {
+      await notif.setNotificationChannelAsync(ANDROID_CHANNELS.ALARMS, {
         name: 'Alarmes de Rotina e Checklists',
-        importance: Notifications.AndroidImportance.MAX,
+        importance: notif.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250, 250, 500],
         lightColor: '#06B6D4',
         sound: 'default',
@@ -52,9 +68,9 @@ export const initNotifications = async (): Promise<boolean> => {
         showBadge: true,
       });
 
-      await Notifications.setNotificationChannelAsync(ANDROID_CHANNELS.NEWS, {
+      await notif.setNotificationChannelAsync(ANDROID_CHANNELS.NEWS, {
         name: 'Alertas de Notícias e Volatilidade',
-        importance: Notifications.AndroidImportance.MAX,
+        importance: notif.AndroidImportance.MAX,
         vibrationPattern: [0, 500, 250, 500],
         lightColor: '#EF4444',
         sound: 'default',
@@ -62,9 +78,9 @@ export const initNotifications = async (): Promise<boolean> => {
         showBadge: true,
       });
 
-      await Notifications.setNotificationChannelAsync(ANDROID_CHANNELS.TIMERS, {
+      await notif.setNotificationChannelAsync(ANDROID_CHANNELS.TIMERS, {
         name: 'Timers de Pregão e Cool-Down',
-        importance: Notifications.AndroidImportance.HIGH,
+        importance: notif.AndroidImportance.HIGH,
         vibrationPattern: [0, 200, 200, 200],
         lightColor: '#10B981',
         sound: 'default',
@@ -73,11 +89,11 @@ export const initNotifications = async (): Promise<boolean> => {
     }
 
     // 2. Verificar/Solicitar Permissões
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status: existingStatus } = await notif.getPermissionsAsync();
     let finalStatus = existingStatus;
 
     if (existingStatus !== 'granted') {
-      const { status } = await Notifications.requestPermissionsAsync({
+      const { status } = await notif.requestPermissionsAsync({
         ios: {
           allowAlert: true,
           allowBadge: true,
@@ -98,12 +114,13 @@ export const initNotifications = async (): Promise<boolean> => {
  * Cancela os agendamentos anteriores de um alarme
  */
 export const cancelAlarmNotifications = async (alarm: TradingAlarm): Promise<void> => {
-  if (Platform.OS === 'web' || isExpoGo) return;
+  const notif = getNotificationsModule();
+  if (!notif) return;
 
   if (alarm.scheduledNotificationIds && alarm.scheduledNotificationIds.length > 0) {
     for (const notifId of alarm.scheduledNotificationIds) {
       try {
-        await Notifications.cancelScheduledNotificationAsync(notifId);
+        await notif.cancelScheduledNotificationAsync(notifId);
       } catch (err) {
         // Ignora caso já tenha sido disparado/removido
       }
@@ -115,7 +132,8 @@ export const cancelAlarmNotifications = async (alarm: TradingAlarm): Promise<voi
  * Agenda as notificações nativas para um alarme de trading
  */
 export const scheduleTradingAlarm = async (alarm: TradingAlarm): Promise<string[]> => {
-  if (Platform.OS === 'web' || isExpoGo || !alarm.enabled) {
+  const notif = getNotificationsModule();
+  if (!notif || !alarm.enabled) {
     return [];
   }
 
@@ -142,7 +160,6 @@ export const scheduleTradingAlarm = async (alarm: TradingAlarm): Promise<string[
       const targetDate = new Date();
       targetDate.setHours(hour, minute, 0, 0);
 
-      // Se o horário de hoje já passou, agenda para o dia seguinte se não tiver newsDate
       if (targetDate.getTime() <= now.getTime() && !alarm.newsDate) {
         targetDate.setDate(targetDate.getDate() + 1);
       }
@@ -152,7 +169,7 @@ export const scheduleTradingAlarm = async (alarm: TradingAlarm): Promise<string[
       const leadDate = new Date(targetDate.getTime() - leadTime * 60 * 1000);
 
       if (leadDate.getTime() > now.getTime()) {
-        const leadId = await Notifications.scheduleNotificationAsync({
+        const leadId = await notif.scheduleNotificationAsync({
           content: {
             title: `⚠️ ${alarm.title} em ${leadTime} min`,
             body: `Atenção: notícia com alta volatilidade às ${alarm.time}. Ajuste stops ou reduza contratos.`,
@@ -160,7 +177,7 @@ export const scheduleTradingAlarm = async (alarm: TradingAlarm): Promise<string[
             sound: true,
           },
           trigger: {
-            type: Notifications.SchedulableTriggerInputTypes.DATE,
+            type: notif.SchedulableTriggerInputTypes.DATE,
             date: leadDate,
             channelId,
           },
@@ -170,7 +187,7 @@ export const scheduleTradingAlarm = async (alarm: TradingAlarm): Promise<string[
 
       // Alerta Imediato na Hora Exata da Notícia
       if (targetDate.getTime() > now.getTime()) {
-        const exactId = await Notifications.scheduleNotificationAsync({
+        const exactId = await notif.scheduleNotificationAsync({
           content: {
             title: `🚨 NOTÍCIA AGORA: ${alarm.title}`,
             body: alarm.subtitle || 'Volatilidade máxima. Evite ordens impulsivas a mercado!',
@@ -178,7 +195,7 @@ export const scheduleTradingAlarm = async (alarm: TradingAlarm): Promise<string[
             sound: true,
           },
           trigger: {
-            type: Notifications.SchedulableTriggerInputTypes.DATE,
+            type: notif.SchedulableTriggerInputTypes.DATE,
             date: targetDate,
             channelId,
           },
@@ -189,13 +206,13 @@ export const scheduleTradingAlarm = async (alarm: TradingAlarm): Promise<string[
       return scheduledIds;
     }
 
-    // Caso 2: Alarme de rotina diária / semanal (segunda a sexta ou dias selecionados)
+    // Caso 2: Alarme de rotina diária / semanal
     const targetDays = alarm.days.length > 0 ? alarm.days : [1, 2, 3, 4, 5];
 
     for (const dayOfWeek of targetDays) {
-      const expoWeekday = dayOfWeek + 1; // mapeia 0->1 (Dom), 1->2 (Seg), etc.
+      const expoWeekday = dayOfWeek + 1; // 0->1 (Dom), 1->2 (Seg), etc.
 
-      const notifId = await Notifications.scheduleNotificationAsync({
+      const notifId = await notif.scheduleNotificationAsync({
         content: {
           title: `🔔 ${alarm.title}`,
           body: alarm.subtitle || 'Hora de cumprir sua rotina e disciplina operacional.',
@@ -203,7 +220,7 @@ export const scheduleTradingAlarm = async (alarm: TradingAlarm): Promise<string[
           sound: true,
         },
         trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+          type: notif.SchedulableTriggerInputTypes.CALENDAR,
           hour,
           minute,
           weekday: expoWeekday,
@@ -226,15 +243,13 @@ export const scheduleTradingAlarm = async (alarm: TradingAlarm): Promise<string[
  * Sincroniza toda a lista de alarmes do app com o sistema operacional
  */
 export const syncAllAlarmsWithSystem = async (alarms: TradingAlarm[]): Promise<TradingAlarm[]> => {
-  if (Platform.OS === 'web' || isExpoGo) return alarms;
+  const notif = getNotificationsModule();
+  if (!notif) return alarms;
 
   try {
-    // 1. Limpa todos os agendamentos anteriores
-    await Notifications.cancelAllScheduledNotificationsAsync();
+    await notif.cancelAllScheduledNotificationsAsync();
 
-    // 2. Reagenda todos os alarmes habilitados
     const updatedAlarms: TradingAlarm[] = [];
-
     for (const alarm of alarms) {
       if (alarm.enabled) {
         const ids = await scheduleTradingAlarm(alarm);
@@ -259,12 +274,13 @@ export const scheduleDeskTimerNotification = async (
   durationMinutes: number,
   body: string
 ): Promise<string | null> => {
-  if (Platform.OS === 'web' || isExpoGo) return null;
+  const notif = getNotificationsModule();
+  if (!notif) return null;
 
   try {
     const triggerDate = new Date(Date.now() + durationMinutes * 60 * 1000);
 
-    const id = await Notifications.scheduleNotificationAsync({
+    const id = await notif.scheduleNotificationAsync({
       content: {
         title: `⏱️ ${title}`,
         body: body || `Seu tempo de resfriamento de ${durationMinutes} min acabou. Mente recarregada.`,
@@ -272,7 +288,7 @@ export const scheduleDeskTimerNotification = async (
         sound: true,
       },
       trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        type: notif.SchedulableTriggerInputTypes.DATE,
         date: triggerDate,
         channelId: ANDROID_CHANNELS.TIMERS,
       },
@@ -286,17 +302,18 @@ export const scheduleDeskTimerNotification = async (
 };
 
 /**
- * Dispara uma notificação imediata de teste (em X segundos) para validar som e vibração
+ * Dispara uma notificação imediata de teste
  */
 export const scheduleTestNotification = async (secondsDelay: number = 3): Promise<void> => {
-  if (Platform.OS === 'web' || isExpoGo) {
+  const notif = getNotificationsModule();
+  if (!notif) {
     alert('Notificações nativas exatas são executadas no APK / Development Build.');
     return;
   }
 
   await initNotifications();
 
-  await Notifications.scheduleNotificationAsync({
+  await notif.scheduleNotificationAsync({
     content: {
       title: '🔔 Teste de Alarme: Trading Mindset',
       body: 'Seu sistema de alarmes e avisos operacionais está ativo e funcionando perfeitamente!',
@@ -304,7 +321,7 @@ export const scheduleTestNotification = async (secondsDelay: number = 3): Promis
       sound: true,
     },
     trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+      type: notif.SchedulableTriggerInputTypes.TIME_INTERVAL,
       seconds: Math.max(secondsDelay, 1),
       repeats: false,
       channelId: ANDROID_CHANNELS.ALARMS,

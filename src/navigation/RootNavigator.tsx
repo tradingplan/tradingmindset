@@ -11,8 +11,7 @@ import { SOSTiltScreen } from '../screens/SOSTiltScreen';
 import { RulesScreen } from '../screens/RulesScreen';
 import { MiniPlayer } from '../components/MiniPlayer';
 import { AudioModal } from '../components/AudioModal';
-import * as Notifications from 'expo-notifications';
-import { initNotifications, syncAllAlarmsWithSystem, isExpoGo } from '../services/alarmService';
+import { initNotifications, syncAllAlarmsWithSystem, isExpoGo, getNotificationsModule } from '../services/alarmService';
 import { loadAlarms } from '../storage/alarmStore';
 import {
   ClipboardList,
@@ -39,9 +38,10 @@ export const RootNavigator: React.FC = () => {
 
     // 2. Listener para cliques em notificações (apenas em Development Build / Standalone)
     let subscription: { remove: () => void } | undefined;
-    if (!isExpoGo && Platform.OS !== 'web') {
+    const notif = getNotificationsModule();
+    if (notif) {
       try {
-        subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+        subscription = notif.addNotificationResponseReceivedListener((response: any) => {
           const data = response.notification.request.content.data;
           const target = data?.actionTarget as NotificationActionTarget | undefined;
 
