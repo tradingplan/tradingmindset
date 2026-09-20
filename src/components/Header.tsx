@@ -40,10 +40,16 @@ export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNav
       setSyncStatus(status);
     });
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(Boolean(session?.user));
-      loadStreak();
-    });
+    let authSubscription: { unsubscribe: () => void } | undefined;
+    try {
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        setIsAuthenticated(Boolean(session?.user));
+        loadStreak();
+      });
+      authSubscription = data?.subscription;
+    } catch (err) {
+      console.warn('[Header] onAuthStateChange error:', err);
+    }
 
     const interval = setInterval(() => {
       checkMarketStatus();
@@ -53,7 +59,7 @@ export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNav
     return () => {
       clearInterval(interval);
       unsubscribeSync();
-      authListener.subscription.unsubscribe();
+      authSubscription?.unsubscribe?.();
     };
   }, []);
 

@@ -57,13 +57,18 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
   useEffect(() => {
     checkUser();
 
-    // Subscribe to auth state changes
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setCurrentUser(session?.user || null);
-      if (session?.user) {
-        handleManualSync();
-      }
-    });
+    let authSubscription: { unsubscribe: () => void } | undefined;
+    try {
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        setCurrentUser(session?.user || null);
+        if (session?.user) {
+          handleManualSync();
+        }
+      });
+      authSubscription = data?.subscription;
+    } catch (err) {
+      console.warn('[AuthSyncModal] onAuthStateChange error:', err);
+    }
 
     // Subscribe to sync status
     const unsubscribeSync = subscribeSyncStatus((status, lastSyncedAt) => {
@@ -72,7 +77,7 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
     });
 
     return () => {
-      authListener.subscription.unsubscribe();
+      authSubscription?.unsubscribe?.();
       unsubscribeSync();
     };
   }, []);
