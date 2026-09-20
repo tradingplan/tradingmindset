@@ -139,6 +139,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background,
+    maxWidth: Platform.OS === 'web' ? 1080 : undefined,
+    width: '100%',
+    alignSelf: 'center',
+    borderLeftWidth: Platform.OS === 'web' ? 1 : 0,
+    borderRightWidth: Platform.OS === 'web' ? 1 : 0,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   sosTabIconContainer: {
     alignItems: 'center',
