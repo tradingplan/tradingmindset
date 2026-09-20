@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, BorderRadius } from '../theme';
-import { Flame, ShieldCheck, Activity, Award, Bell, Cloud, CloudCheck, CloudOff, RefreshCw } from 'lucide-react-native';
+import { Flame, ShieldCheck, Activity, Award, Bell, Cloud, CloudOff, RefreshCw } from 'lucide-react-native';
 import { getStreakCount } from '../storage/disciplineStore';
 import { loadAlarms } from '../storage/alarmStore';
 import { AlarmsModal } from './alarms/AlarmsModal';
@@ -136,7 +136,7 @@ export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNav
           >
             {isAuthenticated ? (
               syncStatus === 'synced' ? (
-                <CloudCheck size={18} color={Colors.emerald} />
+                <Cloud size={18} color={Colors.emerald} />
               ) : syncStatus === 'syncing' ? (
                 <RefreshCw size={17} color={Colors.cyan} />
               ) : (

@@ -15,7 +15,6 @@ import {
 import { Colors, Typography, Spacing, BorderRadius } from '../../theme';
 import {
   Cloud,
-  CloudCheck,
   CloudOff,
   RefreshCw,
   User,
@@ -283,7 +282,7 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
                     {syncing || syncStatus === 'syncing' ? (
                       <ActivityIndicator size="small" color={Colors.cyan} />
                     ) : syncStatus === 'synced' ? (
-                      <CloudCheck size={18} color={Colors.emerald} />
+                      <Cloud size={18} color={Colors.emerald} />
                     ) : (
                       <Cloud size={18} color={Colors.cyan} />
                     )}
