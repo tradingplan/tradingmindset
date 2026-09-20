@@ -1,18 +1,29 @@
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { TradingAlarm, NotificationActionTarget } from '../types';
 
-// Configura o comportamento das notificações quando o app está em primeiro plano
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    priority: Notifications.AndroidNotificationPriority.MAX,
-  }),
-});
+export const isExpoGo =
+  Constants.executionEnvironment === ExecutionEnvironment.StoreClient ||
+  (Constants as any).appOwnership === 'expo';
+
+// Configura o comportamento das notificações quando o app está em primeiro plano (apenas fora do Expo Go para evitar incompatibilidade)
+if (!isExpoGo && Platform.OS !== 'web') {
+  try {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+        priority: Notifications.AndroidNotificationPriority.MAX,
+      }),
+    });
+  } catch (err) {
+    console.warn('[Notifications] setNotificationHandler skipped:', err);
+  }
+}
 
 export const ANDROID_CHANNELS = {
   ALARMS: 'trading-alarms-high',
@@ -24,7 +35,7 @@ export const ANDROID_CHANNELS = {
  * Inicializa permissões e canais de notificação no Android
  */
 export const initNotifications = async (): Promise<boolean> => {
-  if (Platform.OS === 'web') {
+  if (Platform.OS === 'web' || isExpoGo) {
     return false;
   }
 
@@ -87,7 +98,7 @@ export const initNotifications = async (): Promise<boolean> => {
  * Cancela os agendamentos anteriores de um alarme
  */
 export const cancelAlarmNotifications = async (alarm: TradingAlarm): Promise<void> => {
-  if (Platform.OS === 'web') return;
+  if (Platform.OS === 'web' || isExpoGo) return;
 
   if (alarm.scheduledNotificationIds && alarm.scheduledNotificationIds.length > 0) {
     for (const notifId of alarm.scheduledNotificationIds) {
@@ -104,7 +115,7 @@ export const cancelAlarmNotifications = async (alarm: TradingAlarm): Promise<voi
  * Agenda as notificações nativas para um alarme de trading
  */
 export const scheduleTradingAlarm = async (alarm: TradingAlarm): Promise<string[]> => {
-  if (Platform.OS === 'web' || !alarm.enabled) {
+  if (Platform.OS === 'web' || isExpoGo || !alarm.enabled) {
     return [];
   }
 
@@ -179,8 +190,6 @@ export const scheduleTradingAlarm = async (alarm: TradingAlarm): Promise<string[
     }
 
     // Caso 2: Alarme de rotina diária / semanal (segunda a sexta ou dias selecionados)
-    // No Expo Notifications Calendar Trigger:
-    // weekday: 1 = Domingo, 2 = Segunda, ..., 7 = Sábado
     const targetDays = alarm.days.length > 0 ? alarm.days : [1, 2, 3, 4, 5];
 
     for (const dayOfWeek of targetDays) {
@@ -217,7 +226,7 @@ export const scheduleTradingAlarm = async (alarm: TradingAlarm): Promise<string[
  * Sincroniza toda a lista de alarmes do app com o sistema operacional
  */
 export const syncAllAlarmsWithSystem = async (alarms: TradingAlarm[]): Promise<TradingAlarm[]> => {
-  if (Platform.OS === 'web') return alarms;
+  if (Platform.OS === 'web' || isExpoGo) return alarms;
 
   try {
     // 1. Limpa todos os agendamentos anteriores
@@ -250,7 +259,7 @@ export const scheduleDeskTimerNotification = async (
   durationMinutes: number,
   body: string
 ): Promise<string | null> => {
-  if (Platform.OS === 'web') return null;
+  if (Platform.OS === 'web' || isExpoGo) return null;
 
   try {
     const triggerDate = new Date(Date.now() + durationMinutes * 60 * 1000);
@@ -280,8 +289,8 @@ export const scheduleDeskTimerNotification = async (
  * Dispara uma notificação imediata de teste (em X segundos) para validar som e vibração
  */
 export const scheduleTestNotification = async (secondsDelay: number = 3): Promise<void> => {
-  if (Platform.OS === 'web') {
-    alert('Notificações nativas de teste são simuladas no navegador.');
+  if (Platform.OS === 'web' || isExpoGo) {
+    alert('Notificações nativas exatas são executadas no APK / Development Build.');
     return;
   }
 

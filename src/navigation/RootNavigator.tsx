@@ -12,7 +12,7 @@ import { RulesScreen } from '../screens/RulesScreen';
 import { MiniPlayer } from '../components/MiniPlayer';
 import { AudioModal } from '../components/AudioModal';
 import * as Notifications from 'expo-notifications';
-import { initNotifications, syncAllAlarmsWithSystem } from '../services/alarmService';
+import { initNotifications, syncAllAlarmsWithSystem, isExpoGo } from '../services/alarmService';
 import { loadAlarms } from '../storage/alarmStore';
 import {
   ClipboardList,
@@ -37,26 +37,33 @@ export const RootNavigator: React.FC = () => {
     };
     setupAlarms();
 
-    // 2. Listener para cliques em notificações
-    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
-      const data = response.notification.request.content.data;
-      const target = data?.actionTarget as NotificationActionTarget | undefined;
+    // 2. Listener para cliques em notificações (apenas em Development Build / Standalone)
+    let subscription: { remove: () => void } | undefined;
+    if (!isExpoGo && Platform.OS !== 'web') {
+      try {
+        subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+          const data = response.notification.request.content.data;
+          const target = data?.actionTarget as NotificationActionTarget | undefined;
 
-      if (navigationRef.isReady() && target) {
-        if (target === 'protocol_pre' || target === 'protocol_post') {
-          navigationRef.navigate('Protocol');
-        } else if (target === 'audioteca') {
-          navigationRef.navigate('Audioteca');
-        } else if (target === 'sos_tilt') {
-          navigationRef.navigate('SOSTilt');
-        } else if (target === 'rules') {
-          navigationRef.navigate('Rules');
-        }
+          if (navigationRef.isReady() && target) {
+            if (target === 'protocol_pre' || target === 'protocol_post') {
+              navigationRef.navigate('Protocol');
+            } else if (target === 'audioteca') {
+              navigationRef.navigate('Audioteca');
+            } else if (target === 'sos_tilt') {
+              navigationRef.navigate('SOSTilt');
+            } else if (target === 'rules') {
+              navigationRef.navigate('Rules');
+            }
+          }
+        });
+      } catch (err) {
+        console.warn('[Notifications] listener setup skipped:', err);
       }
-    });
+    }
 
     return () => {
-      subscription.remove();
+      subscription?.remove();
     };
   }, []);
 

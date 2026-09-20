@@ -8,6 +8,7 @@ import {
   TextInput,
   Alert,
   Platform,
+  RefreshControl,
 } from 'react-native';
 import { Colors, Typography, Spacing, BorderRadius } from '../theme';
 import { Card } from '../components/Card';
@@ -17,7 +18,9 @@ import {
   saveProtocol,
   calculateDisciplineScore,
   getDisciplineHistory,
+  getTodayDateString,
 } from '../storage/disciplineStore';
+import { syncAllProtocols, subscribeToRealtimeProtocols } from '../services/syncService';
 import { DailyProtocolState, HistoryDayScore, ProtocolSubTab } from '../types';
 import * as Haptics from 'expo-haptics';
 import {
@@ -46,9 +49,21 @@ export const ProtocolScreen: React.FC = () => {
   const [protocol, setProtocol] = useState<DailyProtocolState | null>(null);
   const [history, setHistory] = useState<HistoryDayScore[]>([]);
   const [isSavedRecently, setIsSavedRecently] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadData();
+
+    // Escuta atualizações vindas do Supabase (ex: digitado no browser)
+    const unsubscribeRealtime = subscribeToRealtimeProtocols((updated) => {
+      if (updated.date === getTodayDateString()) {
+        setProtocol(updated);
+      }
+    });
+
+    return () => {
+      unsubscribeRealtime();
+    };
   }, []);
 
   const loadData = async () => {
@@ -56,6 +71,15 @@ export const ProtocolScreen: React.FC = () => {
     setProtocol(data);
     const hist = await getDisciplineHistory();
     setHistory(hist);
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await syncAllProtocols();
+    } catch {}
+    await loadData();
+    setRefreshing(false);
   };
 
   const triggerHaptic = () => {
@@ -160,6 +184,7 @@ export const ProtocolScreen: React.FC = () => {
           if (target === 'protocol_pre') handleTabChange('pre');
           else if (target === 'protocol_post') handleTabChange('post');
         }}
+        onSyncRefresh={loadData}
       />
 
       {/* Protocol Sub-tabs Navigation (Horizontal Scrollable) */}
@@ -232,7 +257,18 @@ export const ProtocolScreen: React.FC = () => {
       </View>
 
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={Colors.cyan}
+            colors={[Colors.cyan]}
+          />
+        }
+      >
         {/* TAB 1: PRÉ-MERCADO */}
         {activeTab === 'pre' && (
           <View style={styles.tabContent}>

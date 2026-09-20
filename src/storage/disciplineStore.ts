@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DailyProtocolState, GoldenRule, HistoryDayScore, SOSEvent } from '../types';
 import { STORAGE_KEYS } from './storageKeys';
+import { pushProtocolToSupabase, fetchProtocolFromSupabase } from '../services/syncService';
 
 export function getTodayDateString(): string {
   const now = new Date();
@@ -91,6 +92,13 @@ export async function loadTodayProtocol(): Promise<DailyProtocolState> {
     if (raw) {
       return JSON.parse(raw);
     }
+    
+    // Tenta carregar da nuvem caso seja o primeiro acesso no dia neste dispositivo
+    const cloudProtocol = await fetchProtocolFromSupabase(today);
+    if (cloudProtocol) {
+      await AsyncStorage.setItem(`${STORAGE_KEYS.DAILY_PROTOCOL_PREFIX}${today}`, JSON.stringify(cloudProtocol));
+      return cloudProtocol;
+    }
   } catch (err) {
     console.error('Error loading protocol:', err);
   }
@@ -130,6 +138,11 @@ export async function saveProtocol(protocol: DailyProtocolState): Promise<void> 
 
     await AsyncStorage.setItem(STORAGE_KEYS.DISCIPLINE_HISTORY, JSON.stringify(history));
     await updateStreak(history);
+
+    // Sincronização assíncrona em background com o Supabase
+    pushProtocolToSupabase(protocol).catch((err) => {
+      console.warn('[Sync] Background sync to Supabase skipped/failed:', err);
+    });
   } catch (err) {
     console.error('Error saving protocol:', err);
   }

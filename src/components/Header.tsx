@@ -2,37 +2,69 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, BorderRadius } from '../theme';
-import { Flame, ShieldCheck, Activity, Award, Bell } from 'lucide-react-native';
+import { Flame, ShieldCheck, Activity, Award, Bell, Cloud, CloudCheck, CloudOff, RefreshCw } from 'lucide-react-native';
 import { getStreakCount } from '../storage/disciplineStore';
 import { loadAlarms } from '../storage/alarmStore';
 import { AlarmsModal } from './alarms/AlarmsModal';
+import { AuthSyncModal } from './auth/AuthSyncModal';
+import { subscribeSyncStatus, SyncStatus } from '../services/syncService';
+import { supabase } from '../services/supabase';
 import { NotificationActionTarget } from '../types';
 
 interface HeaderProps {
   score?: number;
   onPressScore?: () => void;
   onNavigateToTarget?: (target: NotificationActionTarget) => void;
+  onSyncRefresh?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNavigateToTarget }) => {
+export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNavigateToTarget, onSyncRefresh }) => {
   const insets = useSafeAreaInsets();
   const topSafeAreaPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 20) + Spacing.xs;
 
   const [streak, setStreak] = useState(3);
   const [activeAlarmsCount, setActiveAlarmsCount] = useState(0);
   const [isAlarmsModalVisible, setIsAlarmsModalVisible] = useState(false);
+  const [isSyncModalVisible, setIsSyncModalVisible] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [marketStatus, setMarketStatus] = useState({ text: 'PREGÃO ATIVO', color: Colors.emerald, open: true });
 
   useEffect(() => {
     loadStreak();
     checkMarketStatus();
     loadActiveAlarms();
+    checkAuth();
+
+    const unsubscribeSync = subscribeSyncStatus((status) => {
+      setSyncStatus(status);
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(Boolean(session?.user));
+      loadStreak();
+    });
+
     const interval = setInterval(() => {
       checkMarketStatus();
       loadActiveAlarms();
     }, 30000);
-    return () => clearInterval(interval);
+
+    return () => {
+      clearInterval(interval);
+      unsubscribeSync();
+      authListener.subscription.unsubscribe();
+    };
   }, []);
+
+  const checkAuth = async () => {
+    try {
+      const { data } = await supabase.auth.getSession();
+      setIsAuthenticated(Boolean(data?.session?.user));
+    } catch {
+      setIsAuthenticated(false);
+    }
+  };
 
   const loadStreak = async () => {
     const s = await getStreakCount();
@@ -67,9 +99,17 @@ export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNav
     Alert.alert('Status do Mercado', marketStatus.text);
   };
 
+  const getCloudIconColor = () => {
+    if (!isAuthenticated) return Colors.textMuted;
+    if (syncStatus === 'synced') return Colors.emerald;
+    if (syncStatus === 'syncing') return Colors.cyan;
+    if (syncStatus === 'error') return Colors.crimson;
+    return Colors.cyan;
+  };
+
   return (
     <View style={[styles.container, { paddingTop: topSafeAreaPadding }]}>
-      {/* Top Row: Title, Compact Market Icon & Alarms Button */}
+      {/* Top Row: Title, Market, Cloud Sync & Alarms Buttons */}
       <View style={styles.topRow}>
         <View style={styles.brandContainer}>
           <View style={styles.brandBadge}>
@@ -82,6 +122,33 @@ export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNav
         </View>
 
         <View style={styles.topRightActions}>
+          {/* Cloud Sync Button */}
+          <TouchableOpacity
+            style={[styles.headerActionBtn, { borderColor: isAuthenticated ? 'rgba(6, 182, 212, 0.4)' : 'rgba(255, 255, 255, 0.1)' }]}
+            onPress={() => setIsSyncModalVisible(true)}
+            activeOpacity={0.7}
+          >
+            {isAuthenticated ? (
+              syncStatus === 'synced' ? (
+                <CloudCheck size={18} color={Colors.emerald} />
+              ) : syncStatus === 'syncing' ? (
+                <RefreshCw size={17} color={Colors.cyan} />
+              ) : (
+                <Cloud size={18} color={Colors.cyan} />
+              )
+            ) : (
+              <CloudOff size={18} color={Colors.textMuted} />
+            )}
+            {isAuthenticated && (
+              <View
+                style={[
+                  styles.syncDot,
+                  { backgroundColor: syncStatus === 'synced' ? Colors.emerald : syncStatus === 'syncing' ? Colors.cyan : Colors.amber },
+                ]}
+              />
+            )}
+          </TouchableOpacity>
+
           {/* Compact Market Status Icon (Green = Open, Red/Muted = Closed, Amber = Pre) */}
           <TouchableOpacity
             style={[styles.marketIconBtn, { borderColor: marketStatus.color }]}
@@ -108,6 +175,16 @@ export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNav
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Cloud Sync Modal */}
+      <AuthSyncModal
+        visible={isSyncModalVisible}
+        onClose={() => setIsSyncModalVisible(false)}
+        onSyncComplete={() => {
+          loadStreak();
+          onSyncRefresh?.();
+        }}
+      />
 
       {/* Alarms Modal */}
       <AlarmsModal
@@ -232,6 +309,24 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     borderWidth: 1,
     opacity: 0.4,
+  },
+  headerActionBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: BorderRadius.md,
+    backgroundColor: 'rgba(6, 182, 212, 0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    position: 'relative',
+  },
+  syncDot: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   bellHeaderBtn: {
     width: 36,
