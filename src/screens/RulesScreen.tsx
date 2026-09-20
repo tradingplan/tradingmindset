@@ -8,7 +8,9 @@ import {
   TextInput,
   Modal,
   Platform,
+  StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, BorderRadius } from '../theme';
 import { Card } from '../components/Card';
 import { GoldenRule } from '../types';
@@ -81,6 +83,8 @@ const TENDLER_TILTS = [
 ];
 
 export const RulesScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
+  const topSafeAreaPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 20) + Spacing.sm;
   const [goldenRules, setGoldenRules] = useState<GoldenRule[]>([]);
   const [editingRule, setEditingRule] = useState<GoldenRule | null>(null);
   const [editTitle, setEditTitle] = useState('');
@@ -139,7 +143,7 @@ export const RulesScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: topSafeAreaPadding }]} showsVerticalScrollIndicator={false}>
         {/* Oath Banner */}
         <TouchableOpacity
           style={styles.oathBanner}

@@ -6,7 +6,9 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
+  StatusBar,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, BorderRadius } from '../theme';
 import { Card } from '../components/Card';
 import { BreathingCircle } from '../components/BreathingCircle';
@@ -25,6 +27,8 @@ import {
 } from 'lucide-react-native';
 
 export const SOSTiltScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
+  const topSafeAreaPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 20) + Spacing.sm;
   const [isSOSActive, setIsSOSActive] = useState(false);
   const [completedProtocol, setCompletedProtocol] = useState(false);
 
@@ -59,7 +63,7 @@ export const SOSTiltScreen: React.FC = () => {
     <View style={styles.container}>
       {isSOSActive ? (
         /* ACTIVE PROTOCOL SCREEN (90s IMMERSIVE RESET) */
-        <ScrollView contentContainerStyle={styles.activeScrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[styles.activeScrollContent, { paddingTop: topSafeAreaPadding }]} showsVerticalScrollIndicator={false}>
           <View style={styles.emergencyBanner}>
             <AlertOctagon size={20} color={Colors.crimson} />
             <Text style={styles.emergencyBannerText}>INTERVENÇÃO DE EMERGÊNCIA ANTI-TILT</Text>
@@ -97,7 +101,7 @@ export const SOSTiltScreen: React.FC = () => {
         </ScrollView>
       ) : (
         /* IDLE SCREEN (TACTICAL SOS LAUNCHPAD) */
-        <ScrollView contentContainerStyle={styles.idleScrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={[styles.idleScrollContent, { paddingTop: topSafeAreaPadding }]} showsVerticalScrollIndicator={false}>
           {/* Header Description */}
           <View style={styles.idleHeader}>
             <View style={styles.idleTagRow}>

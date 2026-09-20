@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, BorderRadius } from '../theme';
 import { Flame, ShieldCheck, Activity, Award, Bell } from 'lucide-react-native';
 import { getStreakCount } from '../storage/disciplineStore';
@@ -14,6 +15,9 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNavigateToTarget }) => {
+  const insets = useSafeAreaInsets();
+  const topSafeAreaPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 20) + Spacing.xs;
+
   const [streak, setStreak] = useState(3);
   const [activeAlarmsCount, setActiveAlarmsCount] = useState(0);
   const [isAlarmsModalVisible, setIsAlarmsModalVisible] = useState(false);
@@ -60,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNav
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: topSafeAreaPadding }]}>
       {/* Top Row: Title, Market Status & Alarms Button */}
       <View style={styles.topRow}>
         <View style={styles.brandContainer}>

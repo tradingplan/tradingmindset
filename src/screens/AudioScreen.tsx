@@ -7,7 +7,10 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
+  StatusBar,
+  Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, BorderRadius } from '../theme';
 import { Card } from '../components/Card';
 import { AUDIO_CATALOG, CATEGORY_LABELS } from '../audio/audioCatalog';
@@ -36,6 +39,8 @@ import {
 } from 'lucide-react-native';
 
 export const AudioScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
+  const topSafeAreaPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 20) + Spacing.sm;
   const { currentTrack, isPlaying, playTrack, togglePlayPause, openModal } = useAudio();
   const [selectedCategory, setSelectedCategory] = useState<AudioCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -114,7 +119,7 @@ export const AudioScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingTop: topSafeAreaPadding }]} showsVerticalScrollIndicator={false}>
         {/* Banner: Featured Anchor Track */}
         <TouchableOpacity
           style={styles.featuredCard}
