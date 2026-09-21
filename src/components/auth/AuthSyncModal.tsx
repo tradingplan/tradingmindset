@@ -8,7 +8,6 @@ import {
   TextInput,
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   Keyboard,
@@ -55,11 +54,22 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [lastSync, setLastSync] = useState<Date | undefined>();
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     checkUser();
+
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
+    });
 
     let authSubscription: { unsubscribe: () => void } | undefined;
     try {
@@ -81,6 +91,8 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
     });
 
     return () => {
+      showSub.remove();
+      hideSub.remove();
       authSubscription?.unsubscribe?.();
       unsubscribeSync();
     };
@@ -95,10 +107,18 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
     }
   };
 
-  const scrollToBottom = () => {
-    setTimeout(() => {
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }, 120);
+  const handleClose = () => {
+    Keyboard.dismiss();
+    setKeyboardHeight(0);
+    onClose();
+  };
+
+  const handleBackdropPress = () => {
+    if (keyboardHeight > 0) {
+      Keyboard.dismiss();
+    } else {
+      handleClose();
+    }
   };
 
   const handleAuth = async () => {
@@ -209,29 +229,24 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
     );
   };
 
+  const isKeyboardOpen = keyboardHeight > 0;
+
   return (
     <Modal
       visible={visible}
       animationType="slide"
       transparent
       statusBarTranslucent
-      onRequestClose={onClose}
+      onRequestClose={handleClose}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 30 : 0}
-        style={styles.modalOverlay}
-      >
+      <View style={[styles.modalOverlay, { paddingBottom: keyboardHeight }]}>
         <TouchableOpacity
           style={styles.backdrop}
           activeOpacity={1}
-          onPress={() => {
-            Keyboard.dismiss();
-            onClose();
-          }}
+          onPress={handleBackdropPress}
         />
 
-        <View style={styles.modalContent}>
+        <View style={[styles.modalContent, isKeyboardOpen && styles.modalContentKeyboardOpen]}>
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerTitleRow}>
@@ -243,7 +258,7 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
                 <Text style={styles.subtitle}>Web & Mobile Companion</Text>
               </View>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.7}>
+            <TouchableOpacity onPress={handleClose} style={styles.closeBtn} activeOpacity={0.7}>
               <X size={20} color={Colors.textMuted} />
             </TouchableOpacity>
           </View>
@@ -253,8 +268,10 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="on-drag"
-            automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
-            contentContainerStyle={[styles.scrollBody, !currentUser && styles.scrollBodyAuth]}
+            contentContainerStyle={[
+              styles.scrollBody,
+              !currentUser && (isKeyboardOpen ? styles.scrollBodyKeyboard : styles.scrollBodyAuth),
+            ]}
           >
             {renderConfigWarning()}
 
@@ -362,12 +379,14 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
             ) : (
               /* If NOT Logged In: Sleek Compact Login & Sign Up Forms */
               <View style={styles.authSection}>
-                <View style={styles.syncBanner}>
-                  <RefreshCw size={14} color={Colors.cyan} />
-                  <Text style={styles.syncBannerText}>
-                    Sincronize seu diário e protocolos com o PC em tempo real
-                  </Text>
-                </View>
+                {!isKeyboardOpen && (
+                  <View style={styles.syncBanner}>
+                    <RefreshCw size={14} color={Colors.cyan} />
+                    <Text style={styles.syncBannerText}>
+                      Sincronize seu diário e protocolos com o PC em tempo real
+                    </Text>
+                  </View>
+                )}
 
                 {/* Messages */}
                 {errorMessage && (
@@ -424,7 +443,6 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
                       autoCapitalize="none"
                       keyboardType="email-address"
                       autoCorrect={false}
-                      onFocus={scrollToBottom}
                     />
                   </View>
                 </View>
@@ -442,7 +460,6 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
                       secureTextEntry={!showPassword}
                       autoCapitalize="none"
                       autoCorrect={false}
-                      onFocus={scrollToBottom}
                       onSubmitEditing={handleAuth}
                     />
                     <TouchableOpacity
@@ -479,14 +496,16 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
                   )}
                 </TouchableOpacity>
 
-                <Text style={styles.secureNotice}>
-                  🔒 Seus protocolos e anotações são criptografados e protegidos por Row Level Security (RLS).
-                </Text>
+                {!isKeyboardOpen && (
+                  <Text style={styles.secureNotice}>
+                    🔒 Seus protocolos e anotações são criptografados e protegidos por Row Level Security (RLS).
+                  </Text>
+                )}
               </View>
             )}
           </ScrollView>
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 };
@@ -504,18 +523,21 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundSecondary,
     borderTopLeftRadius: BorderRadius.xl,
     borderTopRightRadius: BorderRadius.xl,
-    maxHeight: Platform.OS === 'ios' ? '88%' : '92%',
+    maxHeight: '92%',
     borderTopWidth: 1,
     borderTopColor: Colors.border,
     overflow: 'hidden',
+  },
+  modalContentKeyboardOpen: {
+    maxHeight: '100%',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.lg,
-    paddingBottom: Spacing.md,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
   },
@@ -525,8 +547,8 @@ const styles = StyleSheet.create({
     gap: Spacing.sm,
   },
   iconCircle: {
-    width: 36,
-    height: 36,
+    width: 34,
+    height: 34,
     borderRadius: BorderRadius.md,
     backgroundColor: 'rgba(6, 182, 212, 0.12)',
     alignItems: 'center',
@@ -536,28 +558,33 @@ const styles = StyleSheet.create({
   },
   title: {
     color: Colors.textPrimary,
-    fontSize: Typography.fontSize.md,
+    fontSize: Typography.fontSize.sm,
     fontWeight: Typography.fontWeight.bold,
   },
   subtitle: {
     color: Colors.cyan,
-    fontSize: Typography.fontSize.xs,
+    fontSize: 11,
     fontWeight: Typography.fontWeight.medium,
   },
   closeBtn: {
-    width: 32,
-    height: 32,
+    width: 30,
+    height: 30,
     borderRadius: BorderRadius.full,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   scrollBody: {
-    padding: Spacing.lg,
-    gap: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.lg,
+    gap: Spacing.sm,
   },
   scrollBodyAuth: {
-    paddingBottom: Platform.OS === 'ios' ? Spacing.xl : 45,
+    paddingBottom: Spacing.xl,
+  },
+  scrollBodyKeyboard: {
+    paddingBottom: Spacing.md,
   },
   syncBanner: {
     flexDirection: 'row',
@@ -568,7 +595,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(6, 182, 212, 0.2)',
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingVertical: Spacing.xs,
   },
   syncBannerText: {
     color: Colors.textSecondary,
@@ -738,6 +765,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 3,
+    marginTop: 2,
   },
   primaryBtnText: {
     color: '#000',
@@ -759,18 +787,17 @@ const styles = StyleSheet.create({
     fontWeight: Typography.fontWeight.semiBold,
   },
   authSection: {
-    gap: Spacing.md,
+    gap: Spacing.sm,
   },
   tabsRow: {
     flexDirection: 'row',
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     borderRadius: BorderRadius.md,
     padding: 3,
-    marginBottom: Spacing.xs,
   },
   tabBtn: {
     flex: 1,
-    paddingVertical: Spacing.sm,
+    paddingVertical: Spacing.xs,
     alignItems: 'center',
     borderRadius: BorderRadius.sm,
   },
@@ -789,11 +816,11 @@ const styles = StyleSheet.create({
     fontWeight: Typography.fontWeight.bold,
   },
   inputGroup: {
-    gap: 6,
+    gap: 4,
   },
   inputLabel: {
     color: Colors.textMuted,
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: Typography.fontWeight.bold,
     letterSpacing: 0.5,
   },
@@ -806,12 +833,14 @@ const styles = StyleSheet.create({
     borderColor: Colors.cardBorder,
     paddingHorizontal: Spacing.md,
     gap: Spacing.sm,
+    height: 44,
   },
   input: {
     flex: 1,
     color: Colors.textPrimary,
     fontSize: Typography.fontSize.sm,
-    paddingVertical: Platform.OS === 'ios' ? Spacing.md : Spacing.sm,
+    paddingVertical: 0,
+    height: '100%',
   },
   eyeBtn: {
     padding: 6,
@@ -823,6 +852,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
     textAlign: 'center',
     lineHeight: 14,
-    marginTop: Spacing.xs,
+    marginTop: 2,
   },
 });
