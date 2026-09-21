@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { Colors, Typography, Spacing, BorderRadius } from '../theme';
 import { supabase } from '../services/supabase';
-import { Lock, Mail, Shield, ArrowRight, CheckCircle, AlertCircle, Terminal, Sparkles } from 'lucide-react-native';
+import { Lock, Mail, Shield, ArrowRight, CheckCircle, AlertCircle, Terminal, Sparkles, Eye, EyeOff } from 'lucide-react-native';
 
 interface WebLoginScreenProps {
   onLoginSuccess?: () => void;
@@ -23,6 +23,7 @@ export const WebLoginScreen: React.FC<WebLoginScreenProps> = ({ onLoginSuccess }
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -195,11 +196,23 @@ export const WebLoginScreen: React.FC<WebLoginScreenProps> = ({ onLoginSuccess }
                   placeholderTextColor={Colors.textMuted}
                   value={password}
                   onChangeText={setPassword}
-                  secureTextEntry
+                  secureTextEntry={!showPassword}
                   autoCapitalize="none"
                   autoCorrect={false}
                   onSubmitEditing={handleSubmit}
                 />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eyeBtn}
+                  activeOpacity={0.7}
+                  accessibilityLabel={showPassword ? "Ocultar senha" : "Ver senha"}
+                >
+                  {showPassword ? (
+                    <EyeOff size={18} color={Colors.cyan} />
+                  ) : (
+                    <Eye size={18} color={Colors.textMuted} />
+                  )}
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -427,6 +440,11 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.sm,
     paddingVertical: Spacing.md,
     outlineStyle: 'none' as any,
+  },
+  eyeBtn: {
+    padding: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   submitButton: {
     backgroundColor: Colors.cyan,

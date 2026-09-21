@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,11 +11,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Keyboard,
 } from 'react-native';
 import { Colors, Typography, Spacing, BorderRadius } from '../../theme';
 import {
   Cloud,
-  CloudOff,
   RefreshCw,
   User,
   Lock,
@@ -27,9 +27,11 @@ import {
   Shield,
   Smartphone,
   Laptop,
+  Eye,
+  EyeOff,
 } from 'lucide-react-native';
 import { supabase, isSupabaseConfigured } from '../../services/supabase';
-import { syncAllProtocols, getSyncStatus, subscribeSyncStatus, SyncStatus } from '../../services/syncService';
+import { syncAllProtocols, subscribeSyncStatus, SyncStatus } from '../../services/syncService';
 
 interface AuthSyncModalProps {
   visible: boolean;
@@ -46,12 +48,15 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
   const [lastSync, setLastSync] = useState<Date | undefined>();
+
+  const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     checkUser();
@@ -88,6 +93,12 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
     } catch {
       setCurrentUser(null);
     }
+  };
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }, 120);
   };
 
   const handleAuth = async () => {
@@ -199,11 +210,27 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      statusBarTranslucent
+      onRequestClose={onClose}
+    >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 30 : 0}
         style={styles.modalOverlay}
       >
+        <TouchableOpacity
+          style={styles.backdrop}
+          activeOpacity={1}
+          onPress={() => {
+            Keyboard.dismiss();
+            onClose();
+          }}
+        />
+
         <View style={styles.modalContent}>
           {/* Header */}
           <View style={styles.header}>
@@ -221,45 +248,50 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
             </TouchableOpacity>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollBody}>
+          <ScrollView
+            ref={scrollRef}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
+            contentContainerStyle={[styles.scrollBody, !currentUser && styles.scrollBodyAuth]}
+          >
             {renderConfigWarning()}
 
-            {/* Explain Sync Mechanism */}
-            <View style={styles.featureCard}>
-              <View style={styles.deviceRow}>
-                <View style={styles.deviceItem}>
-                  <Laptop size={22} color={Colors.cyan} />
-                  <Text style={styles.deviceText}>Web Browser</Text>
-                </View>
-                <RefreshCw size={16} color={Colors.emerald} />
-                <View style={styles.deviceItem}>
-                  <Smartphone size={22} color={Colors.cyan} />
-                  <Text style={styles.deviceText}>App Celular</Text>
-                </View>
-              </View>
-              <Text style={styles.featureDesc}>
-                Escreva seu diário no computador com conforto e acompanhe o protocolo e disciplina no celular onde estiver.
-              </Text>
-            </View>
-
-            {/* Messages */}
-            {errorMessage && (
-              <View style={styles.errorBox}>
-                <AlertCircle size={16} color={Colors.crimson} />
-                <Text style={styles.errorText}>{errorMessage}</Text>
-              </View>
-            )}
-
-            {successMessage && (
-              <View style={styles.successBox}>
-                <CheckCircle size={16} color={Colors.emerald} />
-                <Text style={styles.successText}>{successMessage}</Text>
-              </View>
-            )}
-
-            {/* If Logged In */}
+            {/* If Logged In: Show Device Card and Sync Controls */}
             {currentUser ? (
               <View style={styles.profileSection}>
+                <View style={styles.featureCard}>
+                  <View style={styles.deviceRow}>
+                    <View style={styles.deviceItem}>
+                      <Laptop size={22} color={Colors.cyan} />
+                      <Text style={styles.deviceText}>Web Browser</Text>
+                    </View>
+                    <RefreshCw size={16} color={Colors.emerald} />
+                    <View style={styles.deviceItem}>
+                      <Smartphone size={22} color={Colors.cyan} />
+                      <Text style={styles.deviceText}>App Celular</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.featureDesc}>
+                    Escreva seu diário no computador com conforto e acompanhe o protocolo e disciplina no celular onde estiver.
+                  </Text>
+                </View>
+
+                {errorMessage && (
+                  <View style={styles.errorBox}>
+                    <AlertCircle size={16} color={Colors.crimson} />
+                    <Text style={styles.errorText}>{errorMessage}</Text>
+                  </View>
+                )}
+
+                {successMessage && (
+                  <View style={styles.successBox}>
+                    <CheckCircle size={16} color={Colors.emerald} />
+                    <Text style={styles.successText}>{successMessage}</Text>
+                  </View>
+                )}
+
                 <View style={styles.userCard}>
                   <View style={styles.avatarCircle}>
                     <User size={20} color={Colors.cyan} />
@@ -328,8 +360,30 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
                 </TouchableOpacity>
               </View>
             ) : (
-              /* If NOT Logged In: Login & Sign Up Forms */
+              /* If NOT Logged In: Sleek Compact Login & Sign Up Forms */
               <View style={styles.authSection}>
+                <View style={styles.syncBanner}>
+                  <RefreshCw size={14} color={Colors.cyan} />
+                  <Text style={styles.syncBannerText}>
+                    Sincronize seu diário e protocolos com o PC em tempo real
+                  </Text>
+                </View>
+
+                {/* Messages */}
+                {errorMessage && (
+                  <View style={styles.errorBox}>
+                    <AlertCircle size={16} color={Colors.crimson} />
+                    <Text style={styles.errorText}>{errorMessage}</Text>
+                  </View>
+                )}
+
+                {successMessage && (
+                  <View style={styles.successBox}>
+                    <CheckCircle size={16} color={Colors.emerald} />
+                    <Text style={styles.successText}>{successMessage}</Text>
+                  </View>
+                )}
+
                 <View style={styles.tabsRow}>
                   <TouchableOpacity
                     style={[styles.tabBtn, mode === 'login' && styles.tabBtnActive]}
@@ -369,6 +423,8 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
                       onChangeText={setEmail}
                       autoCapitalize="none"
                       keyboardType="email-address"
+                      autoCorrect={false}
+                      onFocus={scrollToBottom}
                     />
                   </View>
                 </View>
@@ -383,9 +439,25 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
                       placeholderTextColor={Colors.textMuted}
                       value={password}
                       onChangeText={setPassword}
-                      secureTextEntry
+                      secureTextEntry={!showPassword}
                       autoCapitalize="none"
+                      autoCorrect={false}
+                      onFocus={scrollToBottom}
+                      onSubmitEditing={handleAuth}
                     />
+                    <TouchableOpacity
+                      onPress={() => setShowPassword(!showPassword)}
+                      style={styles.eyeBtn}
+                      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                      activeOpacity={0.7}
+                      accessibilityLabel={showPassword ? 'Ocultar senha' : 'Ver senha'}
+                    >
+                      {showPassword ? (
+                        <EyeOff size={18} color={Colors.cyan} />
+                      ) : (
+                        <Eye size={18} color={Colors.textMuted} />
+                      )}
+                    </TouchableOpacity>
                   </View>
                 </View>
 
@@ -425,14 +497,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(5, 7, 10, 0.85)',
     justifyContent: 'flex-end',
   },
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
   modalContent: {
     backgroundColor: Colors.backgroundSecondary,
     borderTopLeftRadius: BorderRadius.xl,
     borderTopRightRadius: BorderRadius.xl,
-    maxHeight: '90%',
-    paddingBottom: Spacing.xl,
+    maxHeight: Platform.OS === 'ios' ? '88%' : '92%',
     borderTopWidth: 1,
     borderTopColor: Colors.border,
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
@@ -480,6 +555,26 @@ const styles = StyleSheet.create({
   scrollBody: {
     padding: Spacing.lg,
     gap: Spacing.md,
+  },
+  scrollBodyAuth: {
+    paddingBottom: Platform.OS === 'ios' ? Spacing.xl : 45,
+  },
+  syncBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    backgroundColor: 'rgba(6, 182, 212, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(6, 182, 212, 0.2)',
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  syncBannerText: {
+    color: Colors.textSecondary,
+    fontSize: Typography.fontSize.xs,
+    flex: 1,
+    lineHeight: 16,
   },
   warningBox: {
     flexDirection: 'row',
@@ -717,6 +812,11 @@ const styles = StyleSheet.create({
     color: Colors.textPrimary,
     fontSize: Typography.fontSize.sm,
     paddingVertical: Platform.OS === 'ios' ? Spacing.md : Spacing.sm,
+  },
+  eyeBtn: {
+    padding: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   secureNotice: {
     color: Colors.textMuted,
