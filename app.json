@@ -6,11 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0B0E14"
-    },
     "ios": {
       "supportsTablet": true
     },
@@ -42,6 +37,14 @@
       "policy": "appVersion"
     },
     "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#0B0E14"
+        }
+      ],
       "expo-audio",
       [
         "expo-notifications",
@@ -50,7 +53,9 @@
           "color": "#06B6D4"
         }
       ],
-      "expo-updates"
+      "expo-updates",
+      "expo-font",
+      "expo-asset"
     ],
     "extra": {
       "eas": {
