@@ -3,6 +3,7 @@ import { StyleSheet, View, ActivityIndicator, Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { AudioProvider } from './src/audio/AudioContext';
+import { TierProvider } from './src/context/TierContext';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { WebLoginScreen } from './src/screens/WebLoginScreen';
 import { supabase } from './src/services/supabase';
@@ -58,10 +59,12 @@ export default function App() {
 
   return (
     <SafeAreaProvider style={styles.webRoot}>
-      <AudioProvider>
-        <StatusBar style="light" />
-        <RootNavigator />
-      </AudioProvider>
+      <TierProvider>
+        <AudioProvider>
+          <StatusBar style="light" />
+          <RootNavigator />
+        </AudioProvider>
+      </TierProvider>
     </SafeAreaProvider>
   );
 }

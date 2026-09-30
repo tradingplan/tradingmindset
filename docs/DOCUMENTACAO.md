@@ -17,6 +17,8 @@ Este documento é o guia definitivo de arquitetura, desenvolvimento, gerenciamen
 9. [Como Adicionar Novos Documentos, Protocolos e Formatos Recomendados](#9-como-adicionar-novos-documentos-protocolos-e-formatos-recomendados)
 10. [Sistema de Alarmes, Lembretes e Gestão de Notificações Locais](#10-sistema-de-alarmes-lembretes-e-gestão-de-notificações-locais)
 11. [Módulo Tarot Trader (Reflexão Psicológica & Arquétipos Comportamentais)](#11-módulo-tarot-trader-reflexão-psicológica--arquétipos-comportamentais)
+12. [Arquitetura de Proteção e Monetização: Opção A (Venda Externa Hotmart/Kiwify + Login Supabase)](#12-arquitetura-de-proteção-e-monetização-opção-a-venda-externa-hotmartkiwify--login-supabase)
+13. [Guia Prático de Teste dos Níveis de Acesso (Anônimo, PRO e Superadmin)](#13-guia-prático-de-teste-dos-níveis-de-acesso-anônimo-pro-e-superadmin)
 
 ---
 
@@ -25,11 +27,13 @@ Este documento é o guia definitivo de arquitetura, desenvolvimento, gerenciamen
 O aplicativo foi desenvolvido em **React Native com Expo SDK 57** e **TypeScript**, projetado especificamente para atuar como o companheiro psicológico e operacional diário de traders de futuros, mini-índice, dólar e ações.
 
 ### 🛠️ Stack Tecnológica
-- **Framework:** React Native 0.86 + Expo SDK 57
+- **Framework:** React Native 0.86 + Expo SDK 57 (Architecture New Architecture ready)
 - **Linguagem:** TypeScript
+- **Backend & Autenticação:** Supabase (PostgreSQL, Row Level Security, Real-time Sync)
 - **Engine de Áudio:** `expo-audio` ~57.0.5 (Background playback, Lock screen controls)
 - **Armazenamento Offline:** `expo-file-system` (Streaming sob demanda + Cache de download persistente)
-- **Persistência de Dados:** `@react-native-async-storage/async-storage` (Salva checklists, score e histórico)
+- **Persistência de Dados & Cache de Planos:** `@react-native-async-storage/async-storage` (Salva checklists, score, histórico do tarot e plano de acesso offline)
+- **Gestão de Acesso & Paywall:** React Context API (`TierContext`) + `tierService.ts`
 - **Ícones:** `lucide-react-native`
 - **Design System:** Dark Mode Fintech/Cyberpunk de alto contraste:
   - Fundo Primário: `#0B0E14`
@@ -541,5 +545,140 @@ O sistema calcula o status operacional com base na carga psicológica final (`ps
    ```bash
    npm run test:tarot
    ```
+
+---
+
+## 12. Arquitetura de Proteção e Monetização: Opção A (Venda Externa Hotmart/Kiwify + Login Supabase)
+
+O **Trading Mindset** implementa uma arquitetura de acesso em 3 níveis (**Freemium Multiplataforma**) projetada para proteger o conteúdo intelectual proprietário, monetizar via plataformas externas (Hotmart / Kiwify / Eduzz / Stripe) e cumprir integralmente as diretrizes de publicação da **Google Play Store** (isenção de taxas de 15% a 30% do Google Play In-App Billing).
+
+### 🛡️ Matriz de Recursos por Nível de Acesso
+
+| Recurso / Módulo | Nível `free` (Convidado) | Nível `premium` (Trader PRO) | Nível `superadmin` |
+| :--- | :---: | :---: | :---: |
+| **Checklist Pré-Market** | Liberado (Básico) | Liberado Completo | Liberado Irrestrito |
+| **SOS Tilt & Respiração 4-7-8** | Liberado | Liberado Completo | Liberado Irrestrito |
+| **Tarot Trader (Carta do Dia)** | 1 Carta/dia + Sabedoria | 1 Carta/dia + Sabedoria | 1 Carta/dia + Sabedoria |
+| **Histórico do Tarot Trader** | Últimos 3 dias | **90 Dias Completos** | 90 Dias Completos |
+| **Áudios de Degustação (3 faixas)** | Liberado | Liberado | Liberado |
+| **Catálogo de Áudios (+20 faixas)** | Bloqueado (`🔒 PRO`) | **100% Liberado** | 100% Liberado |
+| **Download Offline (Modo Avião)** | Bloqueado (`🔒 PRO`) | **Liberado** | Liberado |
+| **Backup & Sincronização em Nuvem** | Não disponível | **Tempo Real (Supabase)** | Tempo Real (Supabase) |
+| **Badge Visual no Header** | `FREE` (Gera Paywall) | `PRO` (Verde Esmeralda) | `ADMIN` (Ouro) |
+| **Reconhecimento Automático** | Convidado / Sem conta | Assinante Web | `tradingplan.br@gmail.com` |
+
+---
+
+### 🎵 Faixas de Degustação Liberadas no Plano Free (`FREE_TRACK_IDS`)
+As 3 seguintes faixas foram selecionadas estrategicamente para ancorar o trader e gerar desejo de upgrade:
+1. `track-pre-1`: **O STOP Não é o Problema (Versão com IA)** — 05:45 (Áudio narrado de alta clareza)
+2. `track-pre-2`: **O STOP Não é o Problema (Versão Original)** — 05:45 (Áudio acústico clássico)
+3. `binaural-alpha-10hz`: **Ondas Alfa (10 Hz) — Flow State Sniper** — 15:00 (Sintetizador binaural puro)
+
+Todas as demais 17+ faixas (frequências Theta, Delta, auto-hipnose de ancoragem e audiolivro The Disciplined Trader) são protegidas pelo paywall nativo `PaywallModal`.
+
+---
+
+### 🗄️ Estrutura do Supabase para Liberação Automática (SQL)
+
+Para gerenciar o plano dos usuários no Supabase, execute o seguinte script no **SQL Editor** do Supabase:
+
+```sql
+-- 1. Criação da tabela de perfis de usuário
+create table if not exists public.profiles (
+  id uuid references auth.users on delete cascade primary key,
+  email text unique not null,
+  role text default 'user' check (role in ('user', 'admin')),
+  plan text default 'free' check (plan in ('free', 'premium', 'pro')),
+  plan_expires_at timestamp with time zone,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 2. Habilitação de Segurança por Linha (RLS)
+alter table public.profiles enable row level security;
+
+create policy "Usuários podem ler seus próprios perfis"
+  on public.profiles for select
+  using (auth.uid() = id);
+
+create policy "Usuários podem atualizar seus próprios perfis"
+  on public.profiles for update
+  using (auth.uid() = id);
+
+-- 3. Trigger para criar perfil automaticamente no primeiro login/cadastro
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.profiles (id, email, role, plan)
+  values (
+    new.id,
+    new.email,
+    case when lower(new.email) in ('tradingplan.br@gmail.com', 'admin@tradingplan.com.br') then 'admin' else 'user' end,
+    case when lower(new.email) in ('tradingplan.br@gmail.com', 'admin@tradingplan.com.br') then 'premium' else 'free' end
+  );
+  return new;
+end;
+$$ language plpgsql security definer;
+
+create or replace trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute procedure public.handle_new_user();
+```
+
+---
+
+### 🔗 Integração do Webhook (Kiwify / Hotmart / Eduzz)
+
+Quando um cliente compra o acesso na **Kiwify** ou **Hotmart**:
+1. A plataforma de vendas dispara um webhook POST com o evento `order.approved` contendo o `email` do comprador.
+2. Seu backend (ou Supabase Edge Function) atualiza a tabela `profiles` do Supabase:
+   ```sql
+   update public.profiles
+   set plan = 'premium',
+       plan_expires_at = now() + interval '1 year'
+   where lower(email) = lower('email_do_comprador@gmail.com');
+   ```
+3. O cliente baixa o app na Google Play Store, faz login com o mesmo e-mail e tem acesso **Trader PRO** liberado instantaneamente no celular e no computador.
+
+---
+
+### 📜 Conformidade com as Diretrizes da Google Play Store (Reader & Multiplatform App)
+
+Para evitar a cobrança de 15% a 30% da taxa de In-App Billing do Google e garantir aprovação sem ressalvas:
+1. **Modelo Reader / Multiplataforma:** O aplicativo é classificado como uma extensão multiplataforma de um serviço web pré-existente (`tradingplan.com.br`).
+2. **Sem Botões Diretos de Checkout:** O modal de Paywall exibe apenas os benefícios do plano PRO e o botão **"JÁ SOU ASSINANTE — FAZER LOGIN"**, sem botões diretos de compra com link externo embutido na ficha do Google.
+3. **Persistência Offline:** O plano é armazenado em cache (`@tradingmindset:user_tier`), garantindo que usuários pagantes mantenham acesso às músicas e histórico mesmo sem internet (no modo avião).
+
+---
+
+## 13. Guia Prático de Teste dos Níveis de Acesso (Anônimo, PRO e Superadmin)
+
+Para alternar de plano e testar as proteções diretamente no celular ou no navegador:
+
+### 🧪 Como Alternar para o Modo Anônimo / Free (Logout)
+Existem 3 formas rápidas no app:
+1. **Pelo Badge do Header:** Toque no badge de plano (`ADMIN` ou `PRO`) no canto superior direito da barra de métricas e selecione **"Desconectar (Modo Anônimo)"**.
+2. **Pelo Ícone da Nuvem:** Toque no ícone de nuvem (`☁️`) no canto superior direito e clique em **"Desconectar desta Conta"**.
+3. **Pela Aba Leis & Regras:** Na aba **Leis & Regras**, role até a seção **"Sessão & Nível de Acesso"** e toque em **"Desconectar (Modo Anônimo)"**.
+
+### 🔍 O que Validar no Modo Anônimo / Convidado:
+* **Audioteca:**
+  * As 3 faixas de degustação tocam normalmente.
+  * As outras 17+ faixas exibem o selo dourado `🔒 PRO` e abrem o `PaywallModal` ao serem clicadas.
+  * O botão de download offline abre o `PaywallModal`.
+  * Um banner promocional do Plano PRO é exibido no topo do catálogo.
+* **Tarot Trader:**
+  * O sorteio da carta do dia, antídoto e sabedoria funcionam livremente.
+  * O histórico exibe os últimos 3 dias e um card para desbloqueio dos 90 dias completos com o plano PRO.
+* **Header:**
+  * O badge exibe `FREE` em ciano. Ao clicar nele, exibe as opções de upgrade ou login.
+
+### 👑 Como Retornar para o Modo Superadmin:
+1. Toque no badge `FREE` ou no ícone da nuvem (`☁️`).
+2. Digite seu e-mail de superadmin (`tradingplan.br@gmail.com`) e sua senha.
+3. O app reconhecerá automaticamente o e-mail, exibirá o badge dourado `ADMIN` no header e desbloqueará 100% dos áudios, downloads e histórico sem qualquer restrição.
+
+
 
 

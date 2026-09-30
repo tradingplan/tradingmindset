@@ -6,6 +6,17 @@ export type RootTabParamList = {
   Rules: undefined;
 };
 
+export type UserTier = 'free' | 'premium' | 'superadmin';
+
+export interface UserTierState {
+  tier: UserTier;
+  isPremium: boolean;
+  isSuperadmin: boolean;
+  isLoggedIn: boolean;
+  email: string | null;
+  planName: string;
+}
+
 export interface PreMarketChecklist {
   sleepQuality: number; // 1 to 5
   emotionalState: 'Calmo' | 'Focado' | 'Ansioso' | 'Cansado' | 'Eufórico';

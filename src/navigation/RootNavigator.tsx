@@ -24,10 +24,15 @@ import {
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
+import { PaywallModal } from '../components/paywall/PaywallModal';
+import { AuthSyncModal } from '../components/auth/AuthSyncModal';
+import { useUserTier } from '../context/TierContext';
+
 export const RootNavigator: React.FC = () => {
   const insets = useSafeAreaInsets();
   const navigationRef = useNavigationContainerRef<RootTabParamList>();
   const bottomBarHeight = Platform.OS === 'ios' ? 88 : 60 + insets.bottom;
+  const { isAuthModalVisible, closeAuthModal, refreshTier } = useUserTier();
 
   useEffect(() => {
     // 1. Inicializar permissões e canais nativos
@@ -150,6 +155,18 @@ export const RootNavigator: React.FC = () => {
 
         {/* Full Expanded Audio Modal */}
         <AudioModal />
+
+        {/* Global Trader PRO Paywall Modal */}
+        <PaywallModal />
+
+        {/* Global Auth / Sync Modal */}
+        <AuthSyncModal
+          visible={isAuthModalVisible}
+          onClose={closeAuthModal}
+          onSyncComplete={() => {
+            refreshTier();
+          }}
+        />
       </View>
     </NavigationContainer>
   );

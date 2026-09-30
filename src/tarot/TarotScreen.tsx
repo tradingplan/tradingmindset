@@ -36,8 +36,11 @@ import {
   RotateCcw,
   Activity,
   Compass,
+  Crown,
+  Lock,
 } from 'lucide-react-native';
 import { getNotificationsModule, isExpoGo } from '../services/alarmService';
+import { useUserTier } from '../context/TierContext';
 
 const COLOR_BEAR = '#E22A22';
 const COLOR_BULL = '#1FA938';
@@ -47,6 +50,8 @@ export const TarotScreen: React.FC = () => {
   const topSafeAreaPadding =
     Math.max(insets.top, Platform.OS === 'android' ? StatusBar.currentHeight || 28 : 20) +
     Spacing.sm;
+
+  const { isPremium, openPaywall } = useUserTier();
 
   const {
     carregando,
@@ -386,7 +391,7 @@ export const TarotScreen: React.FC = () => {
 
             {historicoAberto && (
               <View style={styles.historyList}>
-                {historico.slice(0, 7).map((item, index) => {
+                {(isPremium ? historico.slice(0, 30) : historico.slice(0, 3)).map((item, index) => {
                   const statusColor =
                     item.biasStatus === 'STABLE_FLOW' ? COLOR_BULL : COLOR_BEAR;
                   const cartaInfo = buscarCartaPorId(item.cartaId);
@@ -407,6 +412,25 @@ export const TarotScreen: React.FC = () => {
                     </View>
                   );
                 })}
+
+                {!isPremium && (
+                  <TouchableOpacity
+                    style={styles.historyProCard}
+                    onPress={() => openPaywall('Histórico Completo de 90 Dias do Tarot')}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.historyProLeft}>
+                      <Crown size={15} color="#F59E0B" />
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.historyProTitle}>Histórico Completo de 90 Dias</Text>
+                        <Text style={styles.historyProDesc}>
+                          Assine o Trader PRO para analisar todos os arquétipos e padrões das últimas semanas.
+                        </Text>
+                      </View>
+                    </View>
+                    <Lock size={13} color="#F59E0B" />
+                  </TouchableOpacity>
+                )}
               </View>
             )}
           </View>
@@ -789,6 +813,35 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: '800',
     marginTop: 1,
+  },
+  historyProCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.sm,
+    marginTop: Spacing.sm,
+    gap: Spacing.sm,
+  },
+  historyProLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+    flex: 1,
+  },
+  historyProTitle: {
+    color: '#F59E0B',
+    fontSize: Typography.fontSize.xs,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  historyProDesc: {
+    color: Colors.textSecondary,
+    fontSize: 10,
+    lineHeight: 14,
   },
   devSection: {
     marginTop: Spacing.lg,

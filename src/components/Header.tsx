@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, BorderRadius } from '../theme';
-import { Flame, ShieldCheck, Activity, Award, Bell, Cloud, CloudOff, RefreshCw } from 'lucide-react-native';
+import { Flame, ShieldCheck, Activity, Award, Bell, Cloud, CloudOff, RefreshCw, Crown, Sparkles, Shield } from 'lucide-react-native';
 import { getStreakCount } from '../storage/disciplineStore';
 import { loadAlarms } from '../storage/alarmStore';
 import { AlarmsModal } from './alarms/AlarmsModal';
 import { AuthSyncModal } from './auth/AuthSyncModal';
 import { subscribeSyncStatus, SyncStatus } from '../services/syncService';
 import { supabase } from '../services/supabase';
+import { useUserTier } from '../context/TierContext';
 import { NotificationActionTarget } from '../types';
 
 interface HeaderProps {
@@ -21,6 +22,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNavigateToTarget, onSyncRefresh }) => {
   const insets = useSafeAreaInsets();
   const topSafeAreaPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 20) + Spacing.xs;
+  const { tier, isPremium, isSuperadmin, isLoggedIn, email, openPaywall, refreshTier } = useUserTier();
 
   const [streak, setStreak] = useState(3);
   const [activeAlarmsCount, setActiveAlarmsCount] = useState(0);
@@ -105,12 +107,58 @@ export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNav
     Alert.alert('Status do Mercado', marketStatus.text);
   };
 
-  const getCloudIconColor = () => {
-    if (!isAuthenticated) return Colors.textMuted;
-    if (syncStatus === 'synced') return Colors.emerald;
-    if (syncStatus === 'syncing') return Colors.cyan;
-    if (syncStatus === 'error') return Colors.crimson;
-    return Colors.cyan;
+  const handlePressTierBadge = () => {
+    if (isLoggedIn) {
+      const planTitle = isSuperadmin
+        ? '👑 Superadmin Vitalício'
+        : isPremium
+        ? '⚡ Trader PRO Ativo'
+        : '🌟 Membro Gratuito';
+
+      Alert.alert(
+        'Perfil & Sessão',
+        `E-mail: ${email || 'Conectado'}\nStatus: ${planTitle}\n\nDeseja deslogar para testar as restrições no modo anônimo?`,
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Ver Conta & Sync',
+            onPress: () => setIsSyncModalVisible(true),
+          },
+          {
+            text: 'Desconectar (Modo Anônimo)',
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await supabase.auth.signOut();
+                await refreshTier();
+                Alert.alert(
+                  'Modo Anônimo Ativado',
+                  'Você agora está desconectado no modo Convidado / Free. As restrições de catálogo e histórico estão ativas para teste.'
+                );
+              } catch (e) {
+                console.warn('Erro ao deslogar:', e);
+              }
+            },
+          },
+        ]
+      );
+    } else {
+      Alert.alert(
+        'Modo Convidado (Anônimo)',
+        'Você está no modo gratuito sem login. Os 3 áudios de degustação e 1 carta diária estão liberados.',
+        [
+          { text: 'Continuar Anônimo', style: 'cancel' },
+          {
+            text: 'Entrar / Criar Conta',
+            onPress: () => setIsSyncModalVisible(true),
+          },
+          {
+            text: 'Conhecer Trader PRO',
+            onPress: () => openPaywall('Upgrade para Trader PRO'),
+          },
+        ]
+      );
+    }
   };
 
   return (
@@ -236,11 +284,36 @@ export const Header: React.FC<HeaderProps> = ({ score = 100, onPressScore, onNav
           </View>
         </View>
 
-        {/* Mode Pill */}
-        <View style={styles.metricCardCompact}>
-          <Award size={18} color={Colors.cyan} />
-          <Text style={styles.modeText}>SNIPER</Text>
-        </View>
+        {/* Interactive Dynamic Tier Badge Pill */}
+        <TouchableOpacity
+          style={[
+            styles.metricCardCompact,
+            isSuperadmin
+              ? styles.tierCardSuperadmin
+              : isPremium
+              ? styles.tierCardPro
+              : styles.tierCardFree,
+          ]}
+          onPress={handlePressTierBadge}
+          activeOpacity={0.8}
+        >
+          {isSuperadmin ? (
+            <>
+              <Crown size={17} color="#F59E0B" />
+              <Text style={styles.superadminText}>ADMIN</Text>
+            </>
+          ) : isPremium ? (
+            <>
+              <Crown size={17} color={Colors.emerald} />
+              <Text style={styles.proText}>PRO</Text>
+            </>
+          ) : (
+            <>
+              <Sparkles size={17} color={Colors.cyan} />
+              <Text style={styles.freeText}>FREE</Text>
+            </>
+          )}
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -384,13 +457,38 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(6, 182, 212, 0.08)',
     borderRadius: BorderRadius.md,
     paddingHorizontal: Spacing.sm,
     borderWidth: 1,
+    minWidth: 58,
+  },
+  tierCardSuperadmin: {
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+  },
+  tierCardPro: {
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+  },
+  tierCardFree: {
+    backgroundColor: 'rgba(6, 182, 212, 0.08)',
     borderColor: 'rgba(6, 182, 212, 0.25)',
   },
-  modeText: {
+  superadminText: {
+    color: '#F59E0B',
+    fontSize: 9,
+    fontWeight: Typography.fontWeight.bold,
+    letterSpacing: 0.5,
+    marginTop: 2,
+  },
+  proText: {
+    color: Colors.emerald,
+    fontSize: 9,
+    fontWeight: Typography.fontWeight.bold,
+    letterSpacing: 0.5,
+    marginTop: 2,
+  },
+  freeText: {
     color: Colors.cyan,
     fontSize: 9,
     fontWeight: Typography.fontWeight.bold,

@@ -9,12 +9,15 @@ import {
   Modal,
   Platform,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Colors, Typography, Spacing, BorderRadius } from '../theme';
 import { Card } from '../components/Card';
 import { GoldenRule } from '../types';
 import { loadGoldenRules, saveGoldenRules } from '../storage/disciplineStore';
+import { useUserTier } from '../context/TierContext';
+import { supabase } from '../services/supabase';
 import * as Haptics from 'expo-haptics';
 import {
   BookOpen,
@@ -29,6 +32,10 @@ import {
   Info,
   ChevronRight,
   Flame,
+  User,
+  LogOut,
+  LogIn,
+  Crown,
 } from 'lucide-react-native';
 
 const MARK_DOUGLAS_TRUTHS = [
@@ -85,6 +92,7 @@ const TENDLER_TILTS = [
 export const RulesScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const topSafeAreaPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 20) + Spacing.sm;
+  const { isPremium, isSuperadmin, isLoggedIn, email, openPaywall, openAuthModal, refreshTier } = useUserTier();
   const [goldenRules, setGoldenRules] = useState<GoldenRule[]>([]);
   const [editingRule, setEditingRule] = useState<GoldenRule | null>(null);
   const [editTitle, setEditTitle] = useState('');
@@ -94,6 +102,29 @@ export const RulesScreen: React.FC = () => {
   useEffect(() => {
     loadRules();
   }, []);
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Desconectar Conta',
+      'Deseja sair para utilizar o aplicativo como usuário anônimo / gratuito?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Sair (Modo Anônimo)',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await supabase.auth.signOut();
+              await refreshTier();
+              Alert.alert('Modo Anônimo', 'Você agora está utilizando o app sem login (Modo Convidado / Free).');
+            } catch (e) {
+              console.warn('Erro ao sair:', e);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const loadRules = async () => {
     const rules = await loadGoldenRules();
@@ -239,6 +270,115 @@ export const RulesScreen: React.FC = () => {
             </Card>
           ))}
         </View>
+
+        {/* SECTION 4: CONTA, ACESSO & SESSÃO */}
+        <View style={styles.sectionHeaderSpacing}>
+          <View style={styles.sectionTitleRow}>
+            <User size={20} color={Colors.cyan} />
+            <Text style={styles.sectionTitle}>Sessão & Nível de Acesso</Text>
+          </View>
+          <Text style={styles.sectionSub}>Gerenciamento de Conta e Modo de Operação</Text>
+        </View>
+
+        <Card style={styles.accountCard}>
+          <View style={styles.accountCardTop}>
+            <View
+              style={[
+                styles.avatarCircle,
+                isSuperadmin
+                  ? styles.avatarAdmin
+                  : isPremium
+                  ? styles.avatarPro
+                  : styles.avatarFree,
+              ]}
+            >
+              <User
+                size={22}
+                color={isSuperadmin ? '#F59E0B' : isPremium ? Colors.emerald : Colors.cyan}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.accountStatusLabel}>
+                {isLoggedIn ? 'USUÁRIO CONECTADO' : 'MODO CONVIDADO (ANÔNIMO)'}
+              </Text>
+              <Text style={styles.accountEmail} numberOfLines={1}>
+                {isLoggedIn ? email : 'Sem login ativo'}
+              </Text>
+              <View style={styles.accountTierPillRow}>
+                <View
+                  style={[
+                    styles.accountTierPill,
+                    isSuperadmin
+                      ? styles.accountTierPillAdmin
+                      : isPremium
+                      ? styles.accountTierPillPro
+                      : styles.accountTierPillFree,
+                  ]}
+                >
+                  {isSuperadmin ? (
+                    <>
+                      <Crown size={11} color="#F59E0B" />
+                      <Text style={styles.accountTierTextAdmin}>Superadmin Vitalício</Text>
+                    </>
+                  ) : isPremium ? (
+                    <>
+                      <Crown size={11} color={Colors.emerald} />
+                      <Text style={styles.accountTierTextPro}>Trader PRO Ativo</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={11} color={Colors.cyan} />
+                      <Text style={styles.accountTierTextFree}>Plano Gratuito / Degustação</Text>
+                    </>
+                  )}
+                </View>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.accountActionsRow}>
+            {isLoggedIn ? (
+              <>
+                <TouchableOpacity
+                  style={styles.accountSecondaryBtn}
+                  onPress={openAuthModal}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.accountSecondaryBtnText}>Sincronização & Dados</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.accountLogoutBtn}
+                  onPress={handleLogout}
+                  activeOpacity={0.8}
+                >
+                  <LogOut size={14} color={Colors.crimson} />
+                  <Text style={styles.accountLogoutBtnText}>Desconectar (Modo Anônimo)</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity
+                  style={styles.accountLoginBtn}
+                  onPress={openAuthModal}
+                  activeOpacity={0.8}
+                >
+                  <LogIn size={15} color="#0B0E14" />
+                  <Text style={styles.accountLoginBtnText}>Fazer Login</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.accountProBtn}
+                  onPress={() => openPaywall('Upgrade para Trader PRO')}
+                  activeOpacity={0.8}
+                >
+                  <Crown size={15} color="#0B0E14" />
+                  <Text style={styles.accountProBtnText}>Plano PRO</Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
+        </Card>
       </ScrollView>
 
       {/* EDIT RULE MODAL */}
@@ -673,5 +813,156 @@ const styles = StyleSheet.create({
     fontSize: Typography.fontSize.sm,
     fontWeight: Typography.fontWeight.extraBold,
     letterSpacing: 0.5,
+  },
+  accountCard: {
+    marginTop: Spacing.xs,
+    padding: Spacing.md,
+  },
+  accountCardTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  avatarCircle: {
+    width: 46,
+    height: 46,
+    borderRadius: BorderRadius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+  },
+  avatarAdmin: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+  },
+  avatarPro: {
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+  },
+  avatarFree: {
+    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+    borderColor: 'rgba(6, 182, 212, 0.3)',
+  },
+  accountStatusLabel: {
+    color: Colors.textMuted,
+    fontSize: 9,
+    fontWeight: Typography.fontWeight.bold,
+    letterSpacing: 0.5,
+  },
+  accountEmail: {
+    color: Colors.textPrimary,
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.bold,
+    marginTop: 1,
+  },
+  accountTierPillRow: {
+    flexDirection: 'row',
+    marginTop: 4,
+  },
+  accountTierPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.xs,
+    borderWidth: 1,
+  },
+  accountTierPillAdmin: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+  },
+  accountTierPillPro: {
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+  },
+  accountTierPillFree: {
+    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+    borderColor: 'rgba(6, 182, 212, 0.3)',
+  },
+  accountTierTextAdmin: {
+    color: '#F59E0B',
+    fontSize: 9,
+    fontWeight: Typography.fontWeight.bold,
+  },
+  accountTierTextPro: {
+    color: Colors.emerald,
+    fontSize: 9,
+    fontWeight: Typography.fontWeight.bold,
+  },
+  accountTierTextFree: {
+    color: Colors.cyan,
+    fontSize: 9,
+    fontWeight: Typography.fontWeight.semiBold,
+  },
+  accountActionsRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.05)',
+    paddingTop: Spacing.md,
+  },
+  accountSecondaryBtn: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    paddingVertical: 10,
+    borderRadius: BorderRadius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  accountSecondaryBtnText: {
+    color: Colors.textSecondary,
+    fontSize: Typography.fontSize.xs,
+    fontWeight: Typography.fontWeight.semiBold,
+  },
+  accountLogoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: 'rgba(244, 63, 94, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(244, 63, 94, 0.3)',
+  },
+  accountLogoutBtnText: {
+    color: Colors.crimson,
+    fontSize: Typography.fontSize.xs,
+    fontWeight: Typography.fontWeight.bold,
+  },
+  accountLoginBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: Colors.cyan,
+    paddingVertical: 10,
+    borderRadius: BorderRadius.sm,
+  },
+  accountLoginBtnText: {
+    color: '#0B0E14',
+    fontSize: Typography.fontSize.xs,
+    fontWeight: Typography.fontWeight.bold,
+  },
+  accountProBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#F59E0B',
+    paddingVertical: 10,
+    borderRadius: BorderRadius.sm,
+  },
+  accountProBtnText: {
+    color: '#0B0E14',
+    fontSize: Typography.fontSize.xs,
+    fontWeight: Typography.fontWeight.bold,
   },
 });

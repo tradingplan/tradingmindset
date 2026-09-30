@@ -28,9 +28,12 @@ import {
   Laptop,
   Eye,
   EyeOff,
+  Crown,
+  Sparkles,
 } from 'lucide-react-native';
 import { supabase, isSupabaseConfigured } from '../../services/supabase';
 import { syncAllProtocols, subscribeSyncStatus, SyncStatus } from '../../services/syncService';
+import { useUserTier } from '../../context/TierContext';
 
 interface AuthSyncModalProps {
   visible: boolean;
@@ -43,6 +46,7 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
   onClose,
   onSyncComplete,
 }) => {
+  const { tier, isPremium, isSuperadmin, openPaywall } = useUserTier();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [email, setEmail] = useState('');
@@ -311,19 +315,63 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
 
                 <View style={styles.userCard}>
                   <View style={styles.avatarCircle}>
-                    <User size={20} color={Colors.cyan} />
+                    <User size={20} color={isSuperadmin ? '#F59E0B' : isPremium ? Colors.emerald : Colors.cyan} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.userEmailLabel}>CONECTADO COMO</Text>
                     <Text style={styles.userEmail} numberOfLines={1}>
                       {currentUser.email}
                     </Text>
+                    <View style={styles.planPillRow}>
+                      <View
+                        style={[
+                          styles.planPill,
+                          isSuperadmin
+                            ? styles.planPillAdmin
+                            : isPremium
+                            ? styles.planPillPro
+                            : styles.planPillFree,
+                        ]}
+                      >
+                        {isSuperadmin ? (
+                          <>
+                            <Crown size={11} color="#F59E0B" />
+                            <Text style={styles.planPillTextAdmin}>Superadmin Vitalício</Text>
+                          </>
+                        ) : isPremium ? (
+                          <>
+                            <Crown size={11} color={Colors.emerald} />
+                            <Text style={styles.planPillTextPro}>Trader PRO Ativo</Text>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles size={11} color={Colors.cyan} />
+                            <Text style={styles.planPillTextFree}>Membro Gratuito</Text>
+                          </>
+                        )}
+                      </View>
+                    </View>
                   </View>
                   <View style={styles.onlineBadge}>
                     <View style={styles.onlineDot} />
                     <Text style={styles.onlineText}>Ativo</Text>
                   </View>
                 </View>
+
+                {/* Upgrade PRO Banner if Free User */}
+                {!isPremium && (
+                  <TouchableOpacity
+                    style={styles.upgradeProBtn}
+                    onPress={() => {
+                      handleClose();
+                      openPaywall('Acesso Completo Trader PRO');
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Crown size={16} color="#0B0E14" />
+                    <Text style={styles.upgradeProBtnText}>DESBLOQUEAR PLANO PRO</Text>
+                  </TouchableOpacity>
+                )}
 
                 {/* Sync status info */}
                 <View style={styles.statusRow}>
@@ -380,10 +428,10 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
               /* If NOT Logged In: Sleek Compact Login & Sign Up Forms */
               <View style={styles.authSection}>
                 {!isKeyboardOpen && (
-                  <View style={styles.syncBanner}>
-                    <RefreshCw size={14} color={Colors.cyan} />
-                    <Text style={styles.syncBannerText}>
-                      Sincronize seu diário e protocolos com o PC em tempo real
+                  <View style={styles.externalCheckoutNotice}>
+                    <Crown size={14} color="#F59E0B" />
+                    <Text style={styles.externalCheckoutText}>
+                      Comprou na Kiwify ou Hotmart? Entre com o mesmo e-mail da compra para liberação automática instantânea.
                     </Text>
                   </View>
                 )}
@@ -850,6 +898,81 @@ const styles = StyleSheet.create({
     padding: 6,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  planPillRow: {
+    flexDirection: 'row',
+    marginTop: 4,
+  },
+  planPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: BorderRadius.xs,
+    borderWidth: 1,
+  },
+  planPillAdmin: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+  },
+  planPillPro: {
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderColor: 'rgba(16, 185, 129, 0.4)',
+  },
+  planPillFree: {
+    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+    borderColor: 'rgba(6, 182, 212, 0.3)',
+  },
+  planPillTextAdmin: {
+    color: '#F59E0B',
+    fontSize: 9,
+    fontWeight: Typography.fontWeight.bold,
+  },
+  planPillTextPro: {
+    color: Colors.emerald,
+    fontSize: 9,
+    fontWeight: Typography.fontWeight.bold,
+  },
+  planPillTextFree: {
+    color: Colors.cyan,
+    fontSize: 9,
+    fontWeight: Typography.fontWeight.semiBold,
+  },
+  upgradeProBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F59E0B',
+    paddingVertical: 12,
+    borderRadius: BorderRadius.md,
+    gap: 8,
+    marginTop: Spacing.xs,
+    marginBottom: Spacing.xs,
+  },
+  upgradeProBtnText: {
+    color: '#0B0E14',
+    fontSize: 11,
+    fontWeight: Typography.fontWeight.bold,
+    letterSpacing: 0.5,
+  },
+  externalCheckoutNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.25)',
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 10,
+    marginBottom: 4,
+  },
+  externalCheckoutText: {
+    color: Colors.textSecondary,
+    fontSize: Typography.fontSize.xs,
+    flex: 1,
+    lineHeight: 16,
   },
   secureNotice: {
     color: Colors.textMuted,

@@ -16,6 +16,8 @@ import { Card } from '../components/Card';
 import { AUDIO_CATALOG, CATEGORY_LABELS } from '../audio/audioCatalog';
 import { AudioCategory, AudioTrack } from '../types';
 import { useAudio } from '../audio/AudioContext';
+import { useUserTier } from '../context/TierContext';
+import { isTrackFree } from '../services/tierService';
 import {
   isTrackDownloaded,
   downloadTrackForOffline,
@@ -36,12 +38,15 @@ import {
   Download,
   Check,
   Brain,
+  Lock,
+  Crown,
 } from 'lucide-react-native';
 
 export const AudioScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const topSafeAreaPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 20) + Spacing.sm;
   const { currentTrack, isPlaying, playTrack, togglePlayPause, openModal } = useAudio();
+  const { isPremium, openPaywall } = useUserTier();
   const [selectedCategory, setSelectedCategory] = useState<AudioCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [downloadedMap, setDownloadedMap] = useState<Record<string, boolean>>({});
@@ -63,6 +68,11 @@ export const AudioScreen: React.FC = () => {
   const handleToggleDownload = async (track: AudioTrack) => {
     if (track.isBinauralGen) return;
 
+    if (!isPremium) {
+      openPaywall('Download Offline de Áudios');
+      return;
+    }
+
     if (downloadedMap[track.id]) {
       await deleteOfflineTrack(track.id);
       setDownloadedMap((prev) => ({ ...prev, [track.id]: false }));
@@ -82,6 +92,32 @@ export const AudioScreen: React.FC = () => {
           return copy;
         });
       }
+    }
+  };
+
+  const handlePlayTrack = (track: AudioTrack) => {
+    const isUnlocked = isPremium || isTrackFree(track.id);
+    if (!isUnlocked) {
+      openPaywall(`Áudio: ${track.title}`);
+      return;
+    }
+    if (currentTrack?.id === track.id) {
+      openModal();
+    } else {
+      playTrack(track);
+    }
+  };
+
+  const handlePlayToggle = (track: AudioTrack) => {
+    const isUnlocked = isPremium || isTrackFree(track.id);
+    if (!isUnlocked) {
+      openPaywall(`Áudio: ${track.title}`);
+      return;
+    }
+    if (currentTrack?.id === track.id) {
+      togglePlayPause();
+    } else {
+      playTrack(track);
     }
   };
 
@@ -124,17 +160,16 @@ export const AudioScreen: React.FC = () => {
         <TouchableOpacity
           style={styles.featuredCard}
           activeOpacity={0.9}
-          onPress={() => {
-            if (currentTrack?.id === featuredTrack.id) {
-              openModal();
-            } else {
-              playTrack(featuredTrack);
-            }
-          }}
+          onPress={() => handlePlayTrack(featuredTrack)}
         >
-          <View style={styles.featuredBadge}>
-            <Sparkles size={12} color={Colors.cyan} />
-            <Text style={styles.featuredBadgeText}>DESTAQUE DO DIA</Text>
+          <View style={styles.featuredBadgeRow}>
+            <View style={styles.featuredBadge}>
+              <Sparkles size={12} color={Colors.cyan} />
+              <Text style={styles.featuredBadgeText}>DESTAQUE DO DIA</Text>
+            </View>
+            <View style={styles.featuredFreePill}>
+              <Text style={styles.featuredFreePillText}>DEGUSTAÇÃO LIBERADA</Text>
+            </View>
           </View>
           <Text style={styles.featuredTitle}>{featuredTrack.title}</Text>
           <Text style={styles.featuredSubtitle}>{featuredTrack.subtitle}</Text>
@@ -147,13 +182,7 @@ export const AudioScreen: React.FC = () => {
             </View>
             <TouchableOpacity
               style={styles.featuredPlayBtn}
-              onPress={() => {
-                if (currentTrack?.id === featuredTrack.id && isPlaying) {
-                  togglePlayPause();
-                } else {
-                  playTrack(featuredTrack);
-                }
-              }}
+              onPress={() => handlePlayToggle(featuredTrack)}
             >
               {currentTrack?.id === featuredTrack.id && isPlaying ? (
                 <>
@@ -169,6 +198,33 @@ export const AudioScreen: React.FC = () => {
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
+
+        {/* Promo / Paywall Banner for Free Users */}
+        {!isPremium && (
+          <TouchableOpacity
+            style={styles.proBannerCard}
+            activeOpacity={0.85}
+            onPress={() => openPaywall('Catálogo Completo (+20 Áudios)')}
+          >
+            <View style={styles.proBannerTop}>
+              <View style={styles.proCrownIcon}>
+                <Crown size={18} color="#F59E0B" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.proBannerTitle}>Desbloqueie todo o Catálogo PRO</Text>
+                <Text style={styles.proBannerSubtitle}>
+                  Você possui 3 faixas gratuitas liberadas. Assine para ouvir todas as frequências binaurais e baixar offline.
+                </Text>
+              </View>
+            </View>
+            <View style={styles.proBannerActionRow}>
+              <View style={styles.proBannerActionBtn}>
+                <Crown size={14} color="#0B0E14" />
+                <Text style={styles.proBannerActionText}>CONHECER PLANO PRO</Text>
+              </View>
+            </View>
+          </TouchableOpacity>
+        )}
 
         {/* Search Bar */}
         <View style={styles.searchBarContainer}>
@@ -228,33 +284,36 @@ export const AudioScreen: React.FC = () => {
           {filteredTracks.map((track) => {
             const isThisTrackActive = currentTrack?.id === track.id;
             const isThisTrackPlaying = isThisTrackActive && isPlaying;
+            const trackIsFree = isTrackFree(track.id);
+            const isLocked = !isPremium && !trackIsFree;
 
             return (
               <TouchableOpacity
                 key={track.id}
-                style={[styles.trackCard, isThisTrackActive && styles.trackCardActive]}
+                style={[
+                  styles.trackCard,
+                  isThisTrackActive && styles.trackCardActive,
+                  isLocked && styles.trackCardLocked,
+                ]}
                 activeOpacity={0.8}
-                onPress={() => {
-                  if (isThisTrackActive) {
-                    openModal();
-                  } else {
-                    playTrack(track);
-                  }
-                }}
+                onPress={() => handlePlayTrack(track)}
               >
                 {/* Icon Box */}
                 <View
                   style={[
                     styles.trackIconBox,
                     isThisTrackPlaying && styles.trackIconBoxPlaying,
+                    isLocked && styles.trackIconBoxLocked,
                   ]}
                 >
-                  {track.isBinauralGen ? (
+                  {isLocked ? (
+                    <Lock size={18} color={Colors.amber} />
+                  ) : track.isBinauralGen ? (
                     <Radio size={20} color={isThisTrackActive ? Colors.cyan : Colors.textMuted} />
                   ) : (
                     <Headphones size={20} color={isThisTrackActive ? Colors.emerald : Colors.textMuted} />
                   )}
-                  {track.binauralFreq && (
+                  {track.binauralFreq && !isLocked && (
                     <View style={styles.miniFreqBadge}>
                       <Text style={styles.miniFreqText}>{track.binauralFreq}Hz</Text>
                     </View>
@@ -263,9 +322,29 @@ export const AudioScreen: React.FC = () => {
 
                 {/* Info */}
                 <View style={styles.trackInfo}>
-                  <Text style={[styles.trackTitle, isThisTrackActive && styles.trackTitleActive]} numberOfLines={1}>
-                    {track.title}
-                  </Text>
+                  <View style={styles.titleRowWithBadge}>
+                    <Text
+                      style={[
+                        styles.trackTitle,
+                        isThisTrackActive && styles.trackTitleActive,
+                        isLocked && styles.trackTitleLocked,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {track.title}
+                    </Text>
+                    {trackIsFree ? (
+                      <View style={styles.freeBadge}>
+                        <Text style={styles.freeBadgeText}>FREE</Text>
+                      </View>
+                    ) : isLocked ? (
+                      <View style={styles.proLockBadge}>
+                        <Crown size={9} color="#F59E0B" />
+                        <Text style={styles.proLockBadgeText}>PRO</Text>
+                      </View>
+                    ) : null}
+                  </View>
+
                   <Text style={styles.trackSubtitle} numberOfLines={1}>
                     {track.subtitle}
                   </Text>
@@ -282,6 +361,7 @@ export const AudioScreen: React.FC = () => {
                       style={[
                         styles.trackDownloadBtn,
                         downloadedMap[track.id] && styles.trackDownloadBtnDownloaded,
+                        isLocked && styles.trackDownloadBtnLocked,
                       ]}
                       onPress={(e) => {
                         e.stopPropagation();
@@ -292,6 +372,8 @@ export const AudioScreen: React.FC = () => {
                         <ActivityIndicator size="small" color={Colors.cyan} />
                       ) : downloadedMap[track.id] ? (
                         <Check size={14} color={Colors.emerald} />
+                      ) : isLocked ? (
+                        <Lock size={12} color={Colors.textMuted} />
                       ) : (
                         <Download size={14} color={Colors.textMuted} />
                       )}
@@ -300,20 +382,27 @@ export const AudioScreen: React.FC = () => {
 
                   {/* Play Action Button */}
                   <TouchableOpacity
-                    style={[styles.trackPlayActionBtn, isThisTrackPlaying && styles.trackPlayActionBtnActive]}
+                    style={[
+                      styles.trackPlayActionBtn,
+                      isThisTrackPlaying && styles.trackPlayActionBtnActive,
+                      isLocked && styles.trackPlayActionBtnLocked,
+                    ]}
                     onPress={(e) => {
                       e.stopPropagation();
-                      if (isThisTrackActive) {
-                        togglePlayPause();
-                      } else {
-                        playTrack(track);
-                      }
+                      handlePlayToggle(track);
                     }}
                   >
-                    {isThisTrackPlaying ? (
+                    {isLocked ? (
+                      <Lock size={14} color={Colors.amber} />
+                    ) : isThisTrackPlaying ? (
                       <Pause size={16} color="#0B0E14" fill="#0B0E14" />
                     ) : (
-                      <Play size={16} color={isThisTrackActive ? '#0B0E14' : Colors.textPrimary} fill={isThisTrackActive ? '#0B0E14' : 'transparent'} style={{ marginLeft: 2 }} />
+                      <Play
+                        size={16}
+                        color={isThisTrackActive ? '#0B0E14' : Colors.textPrimary}
+                        fill={isThisTrackActive ? '#0B0E14' : 'transparent'}
+                        style={{ marginLeft: 2 }}
+                      />
                     )}
                   </TouchableOpacity>
                 </View>
@@ -347,6 +436,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 10,
   },
+  featuredBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: Spacing.sm,
+  },
   featuredBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -354,15 +449,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: BorderRadius.xs,
-    alignSelf: 'flex-start',
     gap: 4,
-    marginBottom: Spacing.sm,
   },
   featuredBadgeText: {
     color: Colors.cyan,
     fontSize: 9,
     fontWeight: Typography.fontWeight.bold,
     letterSpacing: 0.8,
+  },
+  featuredFreePill: {
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: BorderRadius.xs,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+  },
+  featuredFreePillText: {
+    color: Colors.emerald,
+    fontSize: 9,
+    fontWeight: Typography.fontWeight.bold,
+    letterSpacing: 0.5,
   },
   featuredTitle: {
     color: Colors.textPrimary,
@@ -409,6 +516,61 @@ const styles = StyleSheet.create({
     color: '#0B0E14',
     fontSize: Typography.fontSize.xs,
     fontWeight: Typography.fontWeight.bold,
+  },
+  proBannerCard: {
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+    padding: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  proBannerTop: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    alignItems: 'flex-start',
+    marginBottom: Spacing.sm,
+  },
+  proCrownIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: BorderRadius.sm,
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+  },
+  proBannerTitle: {
+    color: Colors.textPrimary,
+    fontSize: Typography.fontSize.sm,
+    fontWeight: Typography.fontWeight.bold,
+    marginBottom: 2,
+  },
+  proBannerSubtitle: {
+    color: Colors.textSecondary,
+    fontSize: Typography.fontSize.xs,
+    lineHeight: 17,
+  },
+  proBannerActionRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 4,
+  },
+  proBannerActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F59E0B',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: BorderRadius.xs,
+  },
+  proBannerActionText: {
+    color: '#0B0E14',
+    fontSize: 10,
+    fontWeight: Typography.fontWeight.bold,
+    letterSpacing: 0.5,
   },
   searchBarContainer: {
     flexDirection: 'row',
@@ -489,6 +651,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.cyanDark,
     backgroundColor: 'rgba(26, 31, 44, 0.95)',
   },
+  trackCardLocked: {
+    opacity: 0.9,
+    backgroundColor: 'rgba(18, 22, 31, 0.6)',
+  },
   trackIconBox: {
     width: 44,
     height: 44,
@@ -502,6 +668,10 @@ const styles = StyleSheet.create({
   trackIconBoxPlaying: {
     borderColor: Colors.cyan,
     backgroundColor: 'rgba(6, 182, 212, 0.12)',
+  },
+  trackIconBoxLocked: {
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+    borderColor: 'rgba(245, 158, 11, 0.25)',
   },
   miniFreqBadge: {
     position: 'absolute',
@@ -518,14 +688,54 @@ const styles = StyleSheet.create({
   trackInfo: {
     flex: 1,
   },
+  titleRowWithBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 2,
+  },
   trackTitle: {
     color: Colors.textPrimary,
     fontSize: Typography.fontSize.sm,
     fontWeight: Typography.fontWeight.bold,
-    marginBottom: 2,
+    flexShrink: 1,
   },
   trackTitleActive: {
     color: Colors.cyan,
+  },
+  trackTitleLocked: {
+    color: Colors.textSecondary,
+  },
+  freeBadge: {
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.35)',
+  },
+  freeBadgeText: {
+    color: Colors.emerald,
+    fontSize: 8,
+    fontWeight: Typography.fontWeight.bold,
+    letterSpacing: 0.5,
+  },
+  proLockBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.4)',
+  },
+  proLockBadgeText: {
+    color: '#F59E0B',
+    fontSize: 8,
+    fontWeight: Typography.fontWeight.bold,
+    letterSpacing: 0.5,
   },
   trackSubtitle: {
     color: Colors.textSecondary,
@@ -564,6 +774,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(16, 185, 129, 0.1)',
     borderColor: 'rgba(16, 185, 129, 0.3)',
   },
+  trackDownloadBtnLocked: {
+    opacity: 0.5,
+  },
   trackPlayActionBtn: {
     width: 36,
     height: 36,
@@ -577,5 +790,9 @@ const styles = StyleSheet.create({
   trackPlayActionBtnActive: {
     backgroundColor: Colors.cyan,
     borderColor: Colors.cyan,
+  },
+  trackPlayActionBtnLocked: {
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    borderColor: 'rgba(245, 158, 11, 0.3)',
   },
 });
