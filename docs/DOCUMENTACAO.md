@@ -16,6 +16,7 @@ Este documento é o guia definitivo de arquitetura, desenvolvimento, gerenciamen
 8. [Boas Práticas e Resolução de Problemas (Troubleshooting)](#8-boas-práticas-e-resolução-de-problemas-troubleshooting)
 9. [Como Adicionar Novos Documentos, Protocolos e Formatos Recomendados](#9-como-adicionar-novos-documentos-protocolos-e-formatos-recomendados)
 10. [Sistema de Alarmes, Lembretes e Gestão de Notificações Locais](#10-sistema-de-alarmes-lembretes-e-gestão-de-notificações-locais)
+11. [Módulo Tarot Trader (Reflexão Psicológica & Arquétipos Comportamentais)](#11-módulo-tarot-trader-reflexão-psicológica--arquétipos-comportamentais)
 
 ---
 
@@ -463,4 +464,82 @@ Caso deseje adicionar novos eventos padrão à lista de 1 toque (ex: Vencimento 
   suggestedLeadTime: 15,
 }
 ```
+
+---
+
+## 11. Módulo Tarot Trader (Reflexão Psicológica & Arquétipos Comportamentais)
+
+O módulo **Tarot Trader** foi projetado para atuar como uma âncora de reflexão diária e identificação precoce de armadilhas psicológicas e emocionais antes ou durante o pregão.
+
+### 📁 Localização do Arquivo de Dados
+Os dados e as 22 cartas de arquétipos comportamentais estão localizados em:
+`src/data/tarot-trader-cartas.json`
+
+O aplicativo importa este arquivo estático de forma desacoplada através do módulo `src/tarot/cartas.ts`. Nenhuma chamada de rede externa é realizada.
+
+### 🃏 Estrutura do JSON e Formato dos Campos
+
+Cada carta segue a seguinte estrutura de dados:
+
+```json
+{
+  "numero": 1,
+  "id": "vingador-do-mercado",
+  "arquetipo": "O Vingador do Mercado",
+  "emocao": "FÚRIA / RAIVA",
+  "polaridade": "bear",
+  "icone": "zap",
+  "psych_load": 75,
+  "vies": "Revenge trading",
+  "sabedoria": "O mercado é impessoal e não deve nada a você. Tentar 'bater de frente' com a tendência para se vingar de um prejuízo anterior só trará perdas ainda maiores.",
+  "sinais": [
+    "Entrar logo após um stop, sem setup definido",
+    "Aumentar o tamanho da posição para 'recuperar'"
+  ],
+  "antidoto": "Encerre a sessão ao atingir a perda máxima diária. Sem exceções.",
+  "fonte": "clear"
+}
+```
+
+* **`numero`** *(number)*: Índice sequencial da carta (1 a 22).
+* **`id`** *(string)*: Identificador único em formato kebab-case (ex: `vingador-do-mercado`).
+* **`arquetipo`** *(string)*: Nome editorial do arquétipo comportamental exibido em destaque.
+* **`emocao`** *(string)*: Emoção ou estado predominante ligado ao padrão.
+* **`polaridade`** *(string)*: `"bear"` (armadilha psicológica / viés destrutivo, cor `#E22A22`) ou `"bull"` (hábito disciplinado / comportamento consistente, cor `#1FA938`).
+* **`icone`** *(string)*: Nome do ícone do pacote `lucide-react-native` em kebab-case (ex: `zap`, `ghost`, `shield-check`). Mapeado estaticamente em `src/tarot/icons.ts`.
+* **`psych_load`** *(number)*: Carga psicológica base (0 a 100%).
+* **`vies`** *(string)*: Classificação técnica do viés cognitivo associado.
+* **`sabedoria`** *(string)*: Reflexão filosófica e prática inegociável.
+* **`sinais`** *(array de strings)*: Lista de comportamentos observáveis para diagnóstico rápido.
+* **`antidoto`** *(string)*: Ação corretiva prescritiva imediata.
+* **`fonte`** *(string)*: Origem conceitual da literatura comportamental.
+
+### 📊 Faixas de Status de Viés (`biasStatus`)
+
+O sistema calcula o status operacional com base na carga psicológica final (`psychLoad`), que aplica uma variação sutil de $\pm 8\%$ sobre a carga base:
+
+| Faixa de Psych Load | Status (`biasStatus`) | Classificação Operacional | Cor Visual |
+| :--- | :--- | :--- | :--- |
+| **< 40%** | `STABLE_FLOW` | Zona de Fluxo e Calma | Verde (`#1FA938`) |
+| **40% a 59%** | `CAUTION_DRIFT` | Deriva / Atenção Redobrada | Vermelho (`#E22A22`) |
+| **60% a 79%** | `UNSTABLE_OVERLOAD` | Sobrecarga Emocional Elevada | Vermelho (`#E22A22`) |
+| **$\ge$ 80%** | `CRITICAL_TILT` | Risco Crítico de Tilt Iminente | Vermelho (`#E22A22`) |
+
+### 🔒 Regra de Uma Carta por Dia & Persistência
+
+1. **Fuso Horário Local:** A verificação utiliza a data local do dispositivo (`dataLocalHoje()`, formato `YYYY-MM-DD`), impedindo viradas indevidas às 21h que ocorreriam com `toISOString()`.
+2. **Imutabilidade Diária:** Uma vez puxada a carta, a leitura é salva no AsyncStorage sob a chave `tarot:ultima-leitura`. Reabrir o app no mesmo dia carrega a carta já revelada sem permitir novos sorteios.
+3. **Histórico de 90 Dias:** As últimas 90 leituras são preservadas em `tarot:historico` para acompanhamento de tendências comportamentais.
+4. **Revalidação Automática:** Ao atravessar a meia-noite com o app aberto ou em background, o retorno para o primeiro plano (`AppState`) detecta a mudança de data e libera o sorteio do novo dia.
+
+### ✍️ Como Adicionar ou Editar Cartas
+
+1. Abra o arquivo `src/data/tarot-trader-cartas.json`.
+2. Adicione ou edite o objeto dentro do array `"cartas"`.
+3. Certifique-se de que o `numero` e o `id` sejam únicos, que o campo `polaridade` seja `"bear"` ou `"bull"`, e que o ícone exista no mapa estático de `src/tarot/icons.ts`.
+4. Execute os testes automatizados para validar a integridade:
+   ```bash
+   npm run test:tarot
+   ```
+
 

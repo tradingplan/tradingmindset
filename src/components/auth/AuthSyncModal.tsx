@@ -208,7 +208,7 @@ export const AuthSyncModal: React.FC<AuthSyncModalProps> = ({
         setSuccessMessage(`Sincronização concluída! (${result.updatedCount} registros atualizados)`);
         onSyncComplete?.();
       } else {
-        setErrorMessage('Não foi possível sincronizar no momento. Verifique sua conexão.');
+        setErrorMessage(result.errorMsg || 'Não foi possível sincronizar no momento. Verifique sua conexão.');
       }
     } catch {
       setErrorMessage('Erro ao executar sincronização.');
@@ -517,7 +517,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
   },
   modalContent: {
     backgroundColor: Colors.backgroundSecondary,

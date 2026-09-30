@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RootTabParamList, NotificationActionTarget } from '../types';
 import { Colors, Typography } from '../theme';
 import { ProtocolScreen } from '../screens/ProtocolScreen';
+import { TarotScreen } from '../tarot/TarotScreen';
 import { AudioScreen } from '../screens/AudioScreen';
 import { SOSTiltScreen } from '../screens/SOSTiltScreen';
 import { RulesScreen } from '../screens/RulesScreen';
@@ -15,6 +16,7 @@ import { initNotifications, syncAllAlarmsWithSystem, isExpoGo, getNotificationsM
 import { loadAlarms } from '../storage/alarmStore';
 import {
   ClipboardList,
+  Sparkles,
   Headphones,
   AlertOctagon,
   BookOpen,
@@ -48,6 +50,8 @@ export const RootNavigator: React.FC = () => {
           if (navigationRef.isReady() && target) {
             if (target === 'protocol_pre' || target === 'protocol_post') {
               navigationRef.navigate('Protocol');
+            } else if (target === 'tarot') {
+              navigationRef.navigate('Tarot');
             } else if (target === 'audioteca') {
               navigationRef.navigate('Audioteca');
             } else if (target === 'sos_tilt') {
@@ -96,6 +100,15 @@ export const RootNavigator: React.FC = () => {
             options={{
               tabBarLabel: 'Protocolo',
               tabBarIcon: ({ color, size }) => <ClipboardList size={size} color={color} />,
+            }}
+          />
+
+          <Tab.Screen
+            name="Tarot"
+            component={TarotScreen}
+            options={{
+              tabBarLabel: 'Tarot',
+              tabBarIcon: ({ color, size }) => <Sparkles size={size} color={color} />,
             }}
           />
 

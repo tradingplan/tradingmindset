@@ -1,0 +1,391 @@
+{
+  "versao": "1.0",
+  "idioma": "pt-BR",
+  "aviso": "Este terminal foi desenhado para autoanálise emocional e controle de vieses internos. Ele não fornece sinais de operação ou conselhos financeiros. Utilize a leitura de hoje para guiar sua paciência operacional, não para tentar adivinhar a direção do preço.",
+  "regras_de_uso": {
+    "psych_load": "Valor base 0-100. O app pode somar uma variação aleatória de -8 a +8 para a carta não parecer fixa.",
+    "bias_status": {
+      "STABLE_FLOW": "psych_load < 40",
+      "CAUTION_DRIFT": "40 a 59",
+      "UNSTABLE_OVERLOAD": "60 a 79",
+      "CRITICAL_TILT": ">= 80"
+    },
+    "polaridade": "bear = armadilha comportamental (vermelho). bull = hábito disciplinado (verde). Cores seguem o design system: vermelho e verde são reservados para esta semântica."
+  },
+  "cartas": [
+    {
+      "numero": 1,
+      "id": "vingador-do-mercado",
+      "arquetipo": "O Vingador do Mercado",
+      "emocao": "FÚRIA / RAIVA",
+      "polaridade": "bear",
+      "icone": "zap",
+      "psych_load": 75,
+      "vies": "Revenge trading",
+      "sabedoria": "O mercado é impessoal e não deve nada a você. Tentar 'bater de frente' com a tendência para se vingar de um prejuízo anterior só trará perdas ainda maiores. A perda faz parte do custo operacional do trader profissional. Aceite-a, respire fundo, e volte somente amanhã.",
+      "sinais": [
+        "Entrar logo após um stop, sem setup definido",
+        "Aumentar o tamanho da posição para 'recuperar'"
+      ],
+      "antidoto": "Encerre a sessão ao atingir a perda máxima diária. Sem exceções.",
+      "fonte": "clear"
+    },
+    {
+      "numero": 2,
+      "id": "cacador-de-fantasmas",
+      "arquetipo": "O Caçador de Fantasmas",
+      "emocao": "ANSIEDADE / FOMO",
+      "polaridade": "bear",
+      "icone": "ghost",
+      "psych_load": 68,
+      "vies": "Medo de ficar de fora",
+      "sabedoria": "O movimento que você perdeu já aconteceu. Correr atrás dele costuma significar comprar perto do topo, com stop largo e risco inflado. Sempre haverá outra oportunidade dentro do seu plano. Perder um trade não custa nada, forçá-lo custa caro.",
+      "sinais": [
+        "Entrar depois que o candle já esticou",
+        "Operar ativo fora da sua lista só porque está subindo"
+      ],
+      "antidoto": "Se o setup não estava no plano antes do movimento, não é seu trade.",
+      "fonte": "clear"
+    },
+    {
+      "numero": 3,
+      "id": "mao-de-alface",
+      "arquetipo": "A Mão de Alface",
+      "emocao": "MEDO DE DEVOLVER LUCRO",
+      "polaridade": "bear",
+      "icone": "scissors",
+      "psych_load": 52,
+      "vies": "Aversão à perda",
+      "sabedoria": "Sair ao primeiro recuo garante um ganho pequeno e deixa o resto na mesa. Se todos os seus ganhos são curtos e as perdas seguem o tamanho planejado, a conta não fecha. O alvo foi definido com a mente fria. Respeite-o.",
+      "sinais": [
+        "Fechar no primeiro pullback normal",
+        "Ganhos médios muito menores que as perdas médias"
+      ],
+      "antidoto": "Defina alvo e saída parcial antes de entrar e não renegocie durante o trade.",
+      "fonte": "clear"
+    },
+    {
+      "numero": 4,
+      "id": "violinado",
+      "arquetipo": "O Violinado",
+      "emocao": "MEDO DE PERDER",
+      "polaridade": "bear",
+      "icone": "shield-alert",
+      "psych_load": 58,
+      "vies": "Aversão à perda",
+      "sabedoria": "Um stop apertado demais não protege você, apenas garante que o ruído normal do preço tire você do jogo. Depois vem a ironia: o mercado vai para onde você previu, e você está de fora, desconfiando da própria estratégia. Proteja o capital com o tamanho da posição, não com um stop sufocado.",
+      "sinais": [
+        "Ser stopado e ver o preço seguir na sua direção",
+        "Perder a confiança em um setup que nem foi testado de verdade"
+      ],
+      "antidoto": "Posicione o stop onde a tese se invalida e ajuste o lote para caber no risco.",
+      "fonte": "clear"
+    },
+    {
+      "numero": 5,
+      "id": "eterno-esperancoso",
+      "arquetipo": "O Eterno Esperançoso",
+      "emocao": "ESPERANÇA",
+      "polaridade": "bear",
+      "icone": "hourglass",
+      "psych_load": 82,
+      "vies": "Efeito disposição / negação da perda",
+      "sabedoria": "'Só mais um pouquinho, vai voltar.' Afastar o stop transforma um prejuízo pequeno e planejado em um rombo. Esperança não é gestão de risco. O stop inegociável foi escrito quando você estava racional, e é ele quem deve mandar agora.",
+      "sinais": [
+        "Mover o stop para longe depois de entrar",
+        "Desligar o stop 'só desta vez'"
+      ],
+      "antidoto": "Regra escrita: o stop só pode ser movido a favor da posição, nunca contra.",
+      "fonte": "clear,wemastertrade"
+    },
+    {
+      "numero": 6,
+      "id": "invencivel",
+      "arquetipo": "O Invencível",
+      "emocao": "EUFORIA",
+      "polaridade": "bear",
+      "icone": "flame",
+      "psych_load": 71,
+      "vies": "Excesso de confiança",
+      "sabedoria": "Uma sequência de ganhos ensina menos do que parece. O mercado 'fácil' é o mais perigoso, porque convida você a dobrar a mão e relaxar as regras. As maiores perdas raramente vêm de mercados difíceis, vêm da complacência. Mantenha o lote do plano quando tudo parecer óbvio.",
+      "sinais": [
+        "Aumentar a posição sem critério após dias verdes",
+        "Achar que 'descobriu o segredo do mercado'"
+      ],
+      "antidoto": "O tamanho da posição é definido pelo risco do plano, nunca pelo humor do dia.",
+      "fonte": "clear,wemastertrade"
+    },
+    {
+      "numero": 7,
+      "id": "confirmador",
+      "arquetipo": "O Confirmador",
+      "emocao": "CERTEZA DEFENSIVA",
+      "polaridade": "bear",
+      "icone": "search-check",
+      "psych_load": 55,
+      "vies": "Viés de confirmação",
+      "sabedoria": "Quando você já decidiu a direção, tudo parece apoiar a tese e os sinais contrários somem. Procure ativamente o argumento que derrubaria a sua operação. Se ele existir e você o ignorou, você não está analisando, está se convencendo.",
+      "sinais": [
+        "Só ler notícias que concordam com a posição",
+        "Descartar o timeframe maior porque 'atrapalha'"
+      ],
+      "antidoto": "Antes de entrar, escreva uma razão pela qual o trade pode dar errado.",
+      "fonte": "clear,cmcapital"
+    },
+    {
+      "numero": 8,
+      "id": "metralhadora",
+      "arquetipo": "A Metralhadora",
+      "emocao": "IMPULSIVIDADE",
+      "polaridade": "bear",
+      "icone": "repeat",
+      "psych_load": 66,
+      "vies": "Overtrading",
+      "sabedoria": "Operar demais cansa a mente, reduz a seletividade e coloca você em trades de baixa qualidade só para estar no mercado. Menos é mais: opere quando houver setup claro. Se o mercado não oferece nada dentro do plano, não fazer nada também é uma posição.",
+      "sinais": [
+        "Número de operações crescendo ao longo do dia",
+        "Entradas sem conseguir explicar o setup"
+      ],
+      "antidoto": "Defina um número máximo de trades por dia e pare ao atingi-lo.",
+      "fonte": "cmcapital,clear"
+    },
+    {
+      "numero": 9,
+      "id": "navegador-sem-bussola",
+      "arquetipo": "O Navegador Sem Bússola",
+      "emocao": "IMPROVISO",
+      "polaridade": "bear",
+      "icone": "compass",
+      "psych_load": 63,
+      "vies": "Ausência de plano de trading",
+      "sabedoria": "Sem regras claras de entrada, saída e risco, cada decisão vira uma negociação entre você e as suas emoções, e elas costumam ganhar. Operar sem plano é navegar na tempestade sem bússola. Escreva o plano, depois opere o plano.",
+      "sinais": [
+        "Não saber o stop e o alvo antes de clicar",
+        "Decidir o tamanho da posição pelo 'feeling'"
+      ],
+      "antidoto": "Sem setup, gatilho, stop e alvo definidos por escrito, não há operação.",
+      "fonte": "cmcapital,clear"
+    },
+    {
+      "numero": 10,
+      "id": "alavancado",
+      "arquetipo": "O Alavancado",
+      "emocao": "GANÂNCIA",
+      "polaridade": "bear",
+      "icone": "trending-up",
+      "psych_load": 79,
+      "vies": "Busca por lucro rápido",
+      "sabedoria": "A alavancagem amplia ganhos e perdas na mesma proporção, mas a pressa emocional só enxerga o primeiro lado. Ela deve ser aliada de quem já tem método, não atalho para quem quer recuperar ou enriquecer rápido. O mercado não tem pressa, o seu capital também não deveria ter.",
+      "sinais": [
+        "Posição grande demais para o tamanho do stop",
+        "Sentir o estômago a cada tick"
+      ],
+      "antidoto": "Calcule o lote pelo risco em reais que aceita perder, não pelo lucro que deseja.",
+      "fonte": "cmcapital,wemastertrade"
+    },
+    {
+      "numero": 11,
+      "id": "trader-sem-stop",
+      "arquetipo": "O Trader Sem Stop",
+      "emocao": "NEGAÇÃO",
+      "polaridade": "bear",
+      "icone": "octagon-x",
+      "psych_load": 88,
+      "vies": "Pensamento de exceção",
+      "sabedoria": "Você sabe que deve usar stop. Quando abre uma exceção porque 'dessa vez vai funcionar', o erro deixa de ser técnico e passa a ser de disciplina. Uma exceção repetida é o hábito que destrói contas ao longo do tempo. A proteção do capital é o que mantém você no jogo.",
+      "sinais": [
+        "Entrar sem saber onde a tese se invalida",
+        "Dizer 'é só uma operação rápida'"
+      ],
+      "antidoto": "A ordem de stop entra junto com a ordem de entrada.",
+      "fonte": "wemastertrade,cmcapital"
+    },
+    {
+      "numero": 12,
+      "id": "devoto-do-indicador",
+      "arquetipo": "O Devoto do Indicador",
+      "emocao": "FALSA SEGURANÇA",
+      "polaridade": "bear",
+      "icone": "activity",
+      "psych_load": 45,
+      "vies": "Simplificação excessiva",
+      "sabedoria": "Nenhum indicador isolado resolve um mercado complexo. Ele resume o passado de um jeito específico e gera falsos sinais fora do contexto certo. Combine leituras, olhe o contexto e lembre que a ferramenta serve à sua análise, não a substitui.",
+      "sinais": [
+        "Operar apenas pelo cruzamento de uma média ou pelo RSI",
+        "Ignorar estrutura e contexto de preço"
+      ],
+      "antidoto": "Toda entrada precisa de pelo menos uma confirmação independente do indicador principal.",
+      "fonte": "cmcapital"
+    },
+    {
+      "numero": 13,
+      "id": "seguidor-de-sinais",
+      "arquetipo": "O Seguidor de Sinais",
+      "emocao": "TERCEIRIZAÇÃO",
+      "polaridade": "bear",
+      "icone": "radio",
+      "psych_load": 50,
+      "vies": "Excesso de confiança em terceiros e software",
+      "sabedoria": "Dicas alheias e robôs sem entendimento têm um problema em comum: quando falham, você não sabe por quê e não sabe o que fazer. Use tecnologia como apoio, nunca como substituta do seu critério. A decisão, e a responsabilidade, são sempre suas.",
+      "sinais": [
+        "Copiar entrada sem saber o stop de quem indicou",
+        "Não conseguir explicar por que o robô está comprado"
+      ],
+      "antidoto": "Só execute o que você consegue justificar com suas próprias regras.",
+      "fonte": "cmcapital"
+    },
+    {
+      "numero": 14,
+      "id": "estudante-estagnado",
+      "arquetipo": "O Estudante Estagnado",
+      "emocao": "ACOMODAÇÃO",
+      "polaridade": "bear",
+      "icone": "book-x",
+      "psych_load": 38,
+      "vies": "Excesso de confiança / inércia",
+      "sabedoria": "O mercado muda de regime, de volatilidade e de participantes. Quem para de estudar opera com um mapa antigo de um território que se moveu. Conhecimento é o único caminho consistente. Reserve tempo regular para aprender, revisar e atualizar o método.",
+      "sinais": [
+        "Usar o mesmo setup sem revisá-lo há meses",
+        "Culpar o mercado por mudanças que você não estudou"
+      ],
+      "antidoto": "Reserve um bloco fixo semanal de estudo e revisão de estratégia.",
+      "fonte": "cmcapital"
+    },
+    {
+      "numero": 15,
+      "id": "erratico",
+      "arquetipo": "O Errático",
+      "emocao": "INSTABILIDADE",
+      "polaridade": "bear",
+      "icone": "shuffle",
+      "psych_load": 72,
+      "vies": "Inconsistência metodológica",
+      "sabedoria": "Quem muda de estratégia a cada perda nunca descobre se alguma delas funciona. Sem repetição, não há amostra; sem amostra, não há aprendizado. Escolha um método, teste-o por tempo suficiente e só ajuste com base em dados do seu diário, nunca no calor de um dia ruim.",
+      "sinais": [
+        "Trocar de setup depois de duas perdas",
+        "Não saber qual é a sua taxa de acerto real"
+      ],
+      "antidoto": "Mudanças no método só acontecem na revisão semanal, nunca durante o pregão.",
+      "fonte": "cmcapital"
+    },
+    {
+      "numero": 16,
+      "id": "maratonista-exausto",
+      "arquetipo": "O Maratonista Exausto",
+      "emocao": "FADIGA / ESTRESSE",
+      "polaridade": "bear",
+      "icone": "battery-low",
+      "psych_load": 61,
+      "vies": "Fadiga de decisão",
+      "sabedoria": "Operar o dia inteiro, sem horário e sem pausa, desgasta a atenção e piora cada decisão seguinte. Estresse externo, sono ruim ou pressa também contam. Em dias assim, reduzir o tamanho ou simplesmente não operar pode ser a decisão mais lucrativa.",
+      "sinais": [
+        "Operar sem horário de início e fim",
+        "Erros bobos de execução no fim do dia"
+      ],
+      "antidoto": "Defina uma janela de operação e feche a plataforma quando ela acabar.",
+      "fonte": "cmcapital,wemastertrade"
+    },
+    {
+      "numero": 17,
+      "id": "planejador",
+      "arquetipo": "O Planejador",
+      "emocao": "CLAREZA",
+      "polaridade": "bull",
+      "icone": "clipboard-list",
+      "psych_load": 18,
+      "vies": "Decisão baseada em regras",
+      "sabedoria": "O plano escrito é a âncora de racionalidade que deve prevalecer sobre a emoção. Quando a adrenalina pede uma exceção, é o documento que responde. Revise as regras antes de abrir a plataforma e planeje o seu trade, depois opere o seu plano.",
+      "sinais": [
+        "Saber entrada, stop e alvo antes do setup aparecer",
+        "Conseguir dizer em uma frase por que vai operar"
+      ],
+      "antidoto": "Leia o plano em voz alta antes da primeira operação do dia.",
+      "fonte": "clear,wemastertrade"
+    },
+    {
+      "numero": 18,
+      "id": "guardiao-do-capital",
+      "arquetipo": "O Guardião do Capital",
+      "emocao": "PROTEÇÃO",
+      "polaridade": "bull",
+      "icone": "shield-check",
+      "psych_load": 15,
+      "vies": "Risco calculado",
+      "sabedoria": "A pergunta do profissional não é quanto posso ganhar, e sim quanto posso perder. Com um risco pequeno e fixo por operação, nenhuma sequência ruim consegue eliminar você do jogo. Calcule o tamanho da posição a partir do stop, não o contrário.",
+      "sinais": [
+        "Risco por operação definido em percentual do capital",
+        "Lote calculado antes da entrada"
+      ],
+      "antidoto": "Confirme o risco em reais antes de enviar qualquer ordem.",
+      "fonte": "clear,wemastertrade"
+    },
+    {
+      "numero": 19,
+      "id": "cronista",
+      "arquetipo": "O Cronista",
+      "emocao": "AUTOCONHECIMENTO",
+      "polaridade": "bull",
+      "icone": "notebook-pen",
+      "psych_load": 22,
+      "vies": "Registro e reflexão",
+      "sabedoria": "O diário torna visível o que é invisível no calor do momento: seus horários ruins, seus gatilhos, os dias em que você finge seguir o plano. Anote não só os números, mas o que sentiu antes e durante a operação. Se não consegue registrar por que entrou, talvez não devesse ter entrado.",
+      "sinais": [
+        "Registrar setup, resultado e estado emocional em cada trade",
+        "Reconhecer padrões nas suas piores operações"
+      ],
+      "antidoto": "Escreva uma linha sobre como você se sentiu antes de encerrar cada operação.",
+      "fonte": "clear,wemastertrade"
+    },
+    {
+      "numero": 20,
+      "id": "que-sabe-parar",
+      "arquetipo": "Aquele Que Sabe Parar",
+      "emocao": "DOMÍNIO PRÓPRIO",
+      "polaridade": "bull",
+      "icone": "power",
+      "psych_load": 20,
+      "vies": "Limite de perda respeitado",
+      "sabedoria": "Ao bater o limite diário, o profissional encerra as posições e desliga a tela. Isso não é fraqueza, é a decisão mais rentável do dia. Tentar recuperar no mesmo dia aumenta o risco e distorce o julgamento. O mercado estará aberto amanhã, e o seu capital precisa estar também.",
+      "sinais": [
+        "Limite de perda diária definido antes do pregão",
+        "Parar mesmo com vontade de 'só mais uma'"
+      ],
+      "antidoto": "Defina a perda máxima do dia em reais e trate o valor como inegociável.",
+      "fonte": "clear,wemastertrade"
+    },
+    {
+      "numero": 21,
+      "id": "observador-paciente",
+      "arquetipo": "O Observador Paciente",
+      "emocao": "PACIÊNCIA",
+      "polaridade": "bull",
+      "icone": "eye",
+      "psych_load": 12,
+      "vies": "Seletividade",
+      "sabedoria": "Se o mercado não oferece uma oportunidade clara dentro do seu plano, não fazer nada é a operação correta. O trader consistente foca na qualidade da execução, não no resultado de um único trade. Um dia de prejuízo com o plano seguido à risca é um bom dia.",
+      "sinais": [
+        "Passar horas sem operar sem ansiedade",
+        "Avaliar o dia pela aderência ao plano, não pelo P&L"
+      ],
+      "antidoto": "No fim do dia, pontue de 0 a 10 a execução do plano antes de olhar o resultado.",
+      "fonte": "clear,cmcapital"
+    },
+    {
+      "numero": 22,
+      "id": "equanime",
+      "arquetipo": "O Equânime",
+      "emocao": "EQUILÍBRIO",
+      "polaridade": "bull",
+      "icone": "scale",
+      "psych_load": 10,
+      "vies": "Independência entre trades",
+      "sabedoria": "Cada operação é um evento estatístico independente. Nem a série de ganhos nem a série de perdas deve alterar o tamanho da próxima mão. Aceite o risco antes de entrar, faça uma pausa entre trades e respire. Você não controla o resultado, mas controla o processo.",
+      "sinais": [
+        "Mesmo lote e mesma calma após ganhos ou perdas",
+        "Pausa consciente entre uma operação e outra"
+      ],
+      "antidoto": "Pergunte-se antes de entrar: estou confortável em perder esse valor se o stop for atingido?",
+      "fonte": "wemastertrade,clear"
+    }
+  ]
+}

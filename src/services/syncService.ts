@@ -2,7 +2,11 @@ import { supabase, isSupabaseConfigured } from './supabase';
 import { DailyProtocolState, HistoryDayScore } from '../types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../storage/storageKeys';
-import { DEFAULT_PRE_MARKET, DEFAULT_SNIPER, DEFAULT_POST_MARKET } from '../storage/disciplineStore';
+import {
+  DEFAULT_PRE_MARKET,
+  DEFAULT_SNIPER,
+  DEFAULT_POST_MARKET,
+} from '../storage/protocolDefaults';
 
 export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error' | 'offline' | 'unauthenticated';
 
@@ -68,6 +72,31 @@ export function dbRecordToProtocol(row: any): DailyProtocolState {
 }
 
 /**
+ * Trata erros de autenticação ou clock skew (PGRST303 / JWT issued at future)
+ */
+async function handleAuthError(error: any): Promise<boolean> {
+  if (
+    error?.code === 'PGRST303' ||
+    error?.message?.includes('JWT issued at future') ||
+    error?.status === 401 ||
+    error?.code === 'PGRST301'
+  ) {
+    if (__DEV__) {
+      console.warn('[Sync] Sessão com clock skew ou token expirado. Renovando token...');
+    }
+    try {
+      const { data, error: refreshErr } = await supabase.auth.refreshSession();
+      if (!refreshErr && data?.session) {
+        return true;
+      }
+    } catch {
+      // Ignora erro no refresh
+    }
+  }
+  return false;
+}
+
+/**
  * Envia um protocolo individual para o Supabase
  */
 export async function pushProtocolToSupabase(protocol: DailyProtocolState): Promise<boolean> {
@@ -89,20 +118,30 @@ export async function pushProtocolToSupabase(protocol: DailyProtocolState): Prom
 
     const record = protocolToDbRecord(protocol, user.id);
 
-    const { error } = await supabase
+    let { error } = await supabase
       .from('daily_protocols')
       .upsert(record, { onConflict: 'user_id, date' });
 
     if (error) {
-      console.error('[Sync] Error pushing protocol to Supabase:', error);
+      const recovered = await handleAuthError(error);
+      if (recovered) {
+        const retry = await supabase
+          .from('daily_protocols')
+          .upsert(record, { onConflict: 'user_id, date' });
+        error = retry.error;
+      }
+    }
+
+    if (error) {
+      console.warn('[Sync] Aviso ao enviar protocolo ao Supabase:', error.message || error);
       updateSyncStatus('error');
       return false;
     }
 
     updateSyncStatus('synced');
     return true;
-  } catch (err) {
-    console.error('[Sync] Unexpected push error:', err);
+  } catch (err: any) {
+    console.warn('[Sync] Falha no push de protocolo:', err?.message || err);
     updateSyncStatus('error');
     return false;
   }
@@ -119,7 +158,7 @@ export async function fetchProtocolFromSupabase(date: string): Promise<DailyProt
     const user = sessionData?.session?.user;
     if (!user) return null;
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from('daily_protocols')
       .select('*')
       .eq('user_id', user.id)
@@ -127,15 +166,29 @@ export async function fetchProtocolFromSupabase(date: string): Promise<DailyProt
       .maybeSingle();
 
     if (error) {
-      console.error('[Sync] Error fetching protocol:', error);
+      const recovered = await handleAuthError(error);
+      if (recovered) {
+        const retry = await supabase
+          .from('daily_protocols')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('date', date)
+          .maybeSingle();
+        data = retry.data;
+        error = retry.error;
+      }
+    }
+
+    if (error) {
+      console.warn('[Sync] Aviso ao buscar protocolo:', error.message || error);
       return null;
     }
 
     if (data) {
       return dbRecordToProtocol(data);
     }
-  } catch (err) {
-    console.error('[Sync] Fetch error:', err);
+  } catch (err: any) {
+    console.warn('[Sync] Falha na busca de protocolo:', err?.message || err);
   }
 
   return null;
@@ -144,10 +197,10 @@ export async function fetchProtocolFromSupabase(date: string): Promise<DailyProt
 /**
  * Sincroniza tudo: envia dados locais pendentes e busca novidades da nuvem
  */
-export async function syncAllProtocols(): Promise<{ success: boolean; updatedCount: number }> {
+export async function syncAllProtocols(): Promise<{ success: boolean; updatedCount: number; errorMsg?: string }> {
   if (!isSupabaseConfigured()) {
     updateSyncStatus('offline');
-    return { success: false, updatedCount: 0 };
+    return { success: false, updatedCount: 0, errorMsg: 'Supabase não configurado' };
   }
 
   try {
@@ -156,22 +209,38 @@ export async function syncAllProtocols(): Promise<{ success: boolean; updatedCou
 
     if (!user) {
       updateSyncStatus('unauthenticated');
-      return { success: false, updatedCount: 0 };
+      return { success: false, updatedCount: 0, errorMsg: 'Usuário não autenticado' };
     }
 
     updateSyncStatus('syncing');
 
     // 1. Busca todos os protocolos do usuário no Supabase
-    const { data: cloudProtocols, error } = await supabase
+    let { data: cloudProtocols, error } = await supabase
       .from('daily_protocols')
       .select('*')
       .eq('user_id', user.id)
       .order('date', { ascending: false });
 
     if (error) {
-      console.error('[Sync] Error pulling cloud protocols:', error);
+      const recovered = await handleAuthError(error);
+      if (recovered) {
+        const retry = await supabase
+          .from('daily_protocols')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('date', { ascending: false });
+        cloudProtocols = retry.data;
+        error = retry.error;
+      }
+    }
+
+    if (error) {
+      console.warn('[Sync] Aviso ao puxar protocolos da nuvem:', error.message || error);
       updateSyncStatus('error');
-      return { success: false, updatedCount: 0 };
+      const msg = error.code === 'PGRST303' || error.message?.includes('JWT issued at future')
+        ? 'Horário do dispositivo desincronizado com o servidor. Verifique data e hora automáticas.'
+        : 'Erro ao comunicar com a nuvem.';
+      return { success: false, updatedCount: 0, errorMsg: msg };
     }
 
     // 2. Grava os dados da nuvem localmente no AsyncStorage
@@ -204,10 +273,10 @@ export async function syncAllProtocols(): Promise<{ success: boolean; updatedCou
 
     updateSyncStatus('synced');
     return { success: true, updatedCount };
-  } catch (err) {
-    console.error('[Sync] Full sync error:', err);
+  } catch (err: any) {
+    console.warn('[Sync] Erro inesperado na sincronização:', err?.message || err);
     updateSyncStatus('error');
-    return { success: false, updatedCount: 0 };
+    return { success: false, updatedCount: 0, errorMsg: err?.message || 'Falha de conexão' };
   }
 }
 

@@ -2,63 +2,21 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DailyProtocolState, GoldenRule, HistoryDayScore, SOSEvent } from '../types';
 import { STORAGE_KEYS } from './storageKeys';
 import { pushProtocolToSupabase, fetchProtocolFromSupabase } from '../services/syncService';
+import {
+  getTodayDateString,
+  DEFAULT_PRE_MARKET,
+  DEFAULT_SNIPER,
+  DEFAULT_POST_MARKET,
+  DEFAULT_GOLDEN_RULES,
+} from './protocolDefaults';
 
-export function getTodayDateString(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-export const DEFAULT_PRE_MARKET: DailyProtocolState['preMarket'] = {
-  sleepQuality: 4,
-  emotionalState: 'Calmo',
-  checkedNews: false,
-  maxLossValue: 'R$ 300,00',
-  targetProfitValue: 'R$ 600,00',
-  maxTrades: 3,
-  commitmentAffirmed: false,
+export {
+  getTodayDateString,
+  DEFAULT_PRE_MARKET,
+  DEFAULT_SNIPER,
+  DEFAULT_POST_MARKET,
+  DEFAULT_GOLDEN_RULES,
 };
-
-export const DEFAULT_SNIPER: DailyProtocolState['sniperCheck'] = {
-  candleClosed: false,
-  technicalStopDefined: false,
-  riskRewardFavorable: false,
-  tradesExecutedToday: 0,
-};
-
-export const DEFAULT_POST_MARKET: DailyProtocolState['postMarket'] = {
-  respectedMaxLoss: true,
-  stoppedOnTimeOrTarget: true,
-  hadImpulsiveTrades: false,
-  mentalNote: '',
-  disciplineScore: 100,
-};
-
-export const DEFAULT_GOLDEN_RULES: GoldenRule[] = [
-  {
-    id: 'rule-1',
-    number: 1,
-    title: 'Aceitação Total do Risco',
-    rule: 'Antes de clicar, o risco financeiro já está aceito e precificado. Se o stop for acionado, é apenas o custo do negócio.',
-    isCustom: false,
-  },
-  {
-    id: 'rule-2',
-    number: 2,
-    title: 'Limite Inviolável de Perda Diária',
-    rule: 'Atingiu o stop diário estabelecido? A plataforma é desligada imediatamente, sem exceção e sem vingança.',
-    isCustom: false,
-  },
-  {
-    id: 'rule-3',
-    number: 3,
-    title: 'Paciência de Franco-Atirador',
-    rule: 'Não opero por tédio. Apenas executo quando o setup gráfico cumpre 100% dos parâmetros pré-definidos.',
-    isCustom: false,
-  },
-];
 
 export function calculateDisciplineScore(
   pre?: DailyProtocolState['preMarket'],

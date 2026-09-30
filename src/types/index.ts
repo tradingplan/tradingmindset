@@ -1,5 +1,6 @@
 export type RootTabParamList = {
   Protocol: undefined;
+  Tarot: undefined;
   Audioteca: undefined;
   SOSTilt: undefined;
   Rules: undefined;
@@ -170,6 +171,7 @@ export type NotificationActionTarget =
   | 'audioteca' 
   | 'sos_tilt' 
   | 'rules' 
+  | 'tarot'
   | 'none';
 
 export interface TradingAlarm {
