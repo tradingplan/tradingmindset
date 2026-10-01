@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import { AudioTrack } from '../types';
+import { supabase } from '../services/supabase';
 import { GITHUB_AUDIO_CONFIG } from '../config/githubAudioConfig';
 
 const AUDIO_DIR = `${FileSystem.documentDirectory || ''}trading_audios/`;
@@ -36,7 +37,7 @@ export const isTrackDownloaded = async (trackId: string): Promise<boolean> => {
     if (info.size && info.size < 50000) {
       try {
         await FileSystem.deleteAsync(localUri, { idempotent: true });
-      } catch {}
+      } catch { }
       return false;
     }
     return true;
@@ -45,29 +46,54 @@ export const isTrackDownloaded = async (trackId: string): Promise<boolean> => {
   }
 };
 
-// Obtém a URL remota de download/streaming
-export const getRemoteTrackUrl = (track: AudioTrack): string => {
+// Obtém a URL remota de download/streaming (via Supabase Storage com signed URL ou fallback)
+export const getRemoteTrackUrl = async (track: AudioTrack): Promise<string> => {
   if (track.sourceUri.startsWith('http://') || track.sourceUri.startsWith('https://')) {
     return track.sourceUri;
   }
   if (track.sourceUri.startsWith('binaural:')) {
     return track.sourceUri;
   }
-  // Se for um caminho relativo (/audios/...), extrai o nome do arquivo para o GitHub Release
-  if (track.sourceUri.startsWith('/audios/')) {
-    const parts = track.sourceUri.split('/');
-    const filename = parts[parts.length - 1];
-    return GITHUB_AUDIO_CONFIG.getTrackDownloadUrl(filename);
+
+  // Remove barra inicial ou prefixo /audios/ se houver
+  let cleanPath = track.sourceUri.startsWith('/') ? track.sourceUri.slice(1) : track.sourceUri;
+  if (cleanPath.startsWith('audios/')) {
+    cleanPath = cleanPath.slice(7);
   }
-  // Se for diretamente o nome do asset no GitHub Release (ex: 01.O.Caminho.para.o.Sucesso.mp3)
-  return GITHUB_AUDIO_CONFIG.getTrackDownloadUrl(track.sourceUri);
+
+  // 1. Tenta gerar URL assinada privada do Supabase Storage (validade de 2 horas = 7200s)
+  try {
+    const { data, error } = await supabase.storage
+      .from('audios')
+      .createSignedUrl(cleanPath, 7200);
+
+    if (!error && data?.signedUrl) {
+      console.log(`[Supabase Storage] 🎵 Link seguro gerado para "${cleanPath}":\n-> ${data.signedUrl}`);
+      return data.signedUrl;
+    }
+  } catch (err) {
+    console.warn('Erro ao obter signed url do Supabase Storage:', err);
+  }
+
+  // 2. Fallback para URL pública do Supabase Storage
+  try {
+    const { data: pubData } = supabase.storage.from('audios').getPublicUrl(cleanPath);
+    if (pubData?.publicUrl) {
+      console.log(`[Supabase Storage] 🎵 Link público gerado para "${cleanPath}":\n-> ${pubData.publicUrl}`);
+      return pubData.publicUrl;
+    }
+  } catch { }
+
+  // 3. Fallback final para GitHub Releases (legado)
+  const filename = cleanPath.split('/').pop() || cleanPath;
+  return GITHUB_AUDIO_CONFIG.getTrackDownloadUrl(filename);
 };
 
 // Obtém a URI pronta para tocar (Local se baixado, Remota se não)
 export const getPlayableTrackUri = async (track: AudioTrack): Promise<string> => {
   if (track.isBinauralGen) return track.sourceUri;
   if (Platform.OS === 'web') {
-    return getRemoteTrackUrl(track);
+    return await getRemoteTrackUrl(track);
   }
 
   const isDownloaded = await isTrackDownloaded(track.id);
@@ -75,7 +101,7 @@ export const getPlayableTrackUri = async (track: AudioTrack): Promise<string> =>
     return getLocalFilePath(track.id);
   }
 
-  return getRemoteTrackUrl(track);
+  return await getRemoteTrackUrl(track);
 };
 
 // Baixa uma faixa para o armazenamento offline do celular com validação de integridade
@@ -88,7 +114,7 @@ export const downloadTrackForOffline = async (
   }
 
   await ensureAudioDirExists();
-  const remoteUrl = getRemoteTrackUrl(track);
+  const remoteUrl = await getRemoteTrackUrl(track);
   const localUri = getLocalFilePath(track.id);
 
   const downloadResumable = FileSystem.createDownloadResumable(
@@ -107,8 +133,8 @@ export const downloadTrackForOffline = async (
   if (!result?.uri || (result.status && result.status >= 400)) {
     try {
       await FileSystem.deleteAsync(localUri, { idempotent: true });
-    } catch {}
-    throw new Error(`Falha no download (HTTP ${result?.status || 404}). Verifique se o release e os arquivos estão acessíveis.`);
+    } catch { }
+    throw new Error(`Falha no download (HTTP ${result?.status || 404}). Verifique se o bucket 'audios' no Supabase está configurado.`);
   }
 
   // Verifica o tamanho do arquivo para evitar salvar respostas de erro de texto 404
@@ -116,7 +142,7 @@ export const downloadTrackForOffline = async (
   if (fileInfo.exists && fileInfo.size && fileInfo.size < 50000) {
     try {
       await FileSystem.deleteAsync(localUri, { idempotent: true });
-    } catch {}
+    } catch { }
     throw new Error('O arquivo baixado retornou erro (tamanho inválido). O arquivo foi descartado.');
   }
 

@@ -24,5 +24,6 @@ yarn-error.log*
 .vscode/
 .idea/
 
-# Large audio files (hosted on GitHub Releases)
+# Large audio files (hosted on Supabase Storage / GitHub Releases)
 audios/
+audio-all/

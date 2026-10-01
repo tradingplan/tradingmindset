@@ -10,7 +10,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'pre_market',
     durationSeconds: 184,
     formattedDuration: '03:04',
-    sourceUri: 'O.STOP.nao.e.o.problema.IA.mp3',
+    sourceUri: 'Identidade/id_O.Stop.nao.eh.o.problema_IA.mp3',
     description: 'Compreenda a natureza do stop loss como ferramenta de proteção patrimonial, e não como falha pessoal.',
   },
   {
@@ -21,7 +21,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'pre_market',
     durationSeconds: 190,
     formattedDuration: '03:10',
-    sourceUri: 'O.Stop.nao.e.o.problema.EU.mp3',
+    sourceUri: 'Identidade/id_O.Stop.nao.eh.o.problema_EU.mp3',
     description: 'Versão em voz humana da afirmação de proteção e desarmamento de expectativas do stop.',
   },
   {
@@ -32,7 +32,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'pre_market',
     durationSeconds: 840,
     formattedDuration: '14:00',
-    sourceUri: 'AH-Para.Traders.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-Para_Traders.mp3',
     description: 'Reprogramação subconsciente focada exclusivamente na disciplina e tranquilidade operacional.',
   },
 
@@ -86,7 +86,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'post_loss',
     durationSeconds: 520,
     formattedDuration: '08:40',
-    sourceUri: 'Thamara.-.Voce.decide.quando.QUEBRAR.-.NEUROCIENCIA.para.travar.o.seu.CEREBRO.no.Loss.mp3',
+    sourceUri: 'Insights/ins_Thamara.Di.Lauro-Voce-decide-quando-quebrar_Como-travar-o-cerebro-no-Loss.mp3',
     description: 'Entenda os mecanismos químicos do cérebro no momento da dor da perda e como abortar a espiral do tilt.',
   },
   {
@@ -97,7 +97,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'post_loss',
     durationSeconds: 425,
     formattedDuration: '07:05',
-    sourceUri: 'Rodney.Dias.-.Siga.esta.DICA.INFALIVEL.e.seus.Resultados.vao.melhorar.mp3',
+    sourceUri: 'Insights/ins_Rodney.Dias-Dica.Infalivel-para-ter-Resultados.mp3',
     description: 'O ajuste fino entre técnica e disciplina que transforma consistência em realidade.',
   },
   {
@@ -108,7 +108,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'post_loss',
     durationSeconds: 600,
     formattedDuration: '10:00',
-    sourceUri: 'AH-Gerenciando.Emocoes.Negativas.Imediatas.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-Gerenciando_Emocoes_Negativas_Imediatas.mp3',
     description: 'Intervenção rápida para bloquear raiva, frustração ou desespero antes de clicar compulsivamente.',
   },
 
@@ -121,7 +121,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'decompression',
     durationSeconds: 585,
     formattedDuration: '09:45',
-    sourceUri: 'Meditacao.Guiada.para.Traders.Luana.Schneider.mp3',
+    sourceUri: 'Meditations/Meditacao-Guiada-para-Traders_Luana.Schneider.mp3',
     description: 'Meditação focada em desacelerar os batimentos cardíacos e liberar a tensão muscular acumulada no pregão.',
   },
   {
@@ -132,7 +132,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'decompression',
     durationSeconds: 1074,
     formattedDuration: '17:54',
-    sourceUri: 'Meditacao.Para.Traders.Guilherme.Cardoso.mp3',
+    sourceUri: 'Meditations/Meditacao-Guiada-para-Traders_Guilherme.Cardoso.mp3',
     description: 'Sessão completa de visualização mental e recondicionamento subconsciente para consistência.',
   },
   {
@@ -143,7 +143,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'decompression',
     durationSeconds: 900,
     formattedDuration: '15:00',
-    sourceUri: 'AH-para.dormir.melhor_guilherme.cardoso.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-para_dormir_melhor_guilherme_cardoso.mp3',
     description: 'Feche as cotações mentalmente e prepare um sono profundo e reparador para o próximo pregão.',
   },
 
@@ -156,7 +156,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'trading_zone_book',
     durationSeconds: 968,
     formattedDuration: '16:08',
-    sourceUri: '01.O.Caminho.para.o.Sucesso.mp3',
+    sourceUri: 'Trading-in-the-Zone_Mark-Douglas/md-01.O.Caminho.para.o.Sucesso.mp3',
     description: 'A análise fundamentalista, técnica e a evolução para a análise mental no mercado.',
   },
   {
@@ -167,7 +167,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'trading_zone_book',
     durationSeconds: 1017,
     formattedDuration: '16:57',
-    sourceUri: '02.O.fascinio.e.os.perigos.do.trading.mp3',
+    sourceUri: 'Trading-in-the-Zone_Mark-Douglas/md-02.O.fascinio.e.os.perigos.do.trading.mp3',
     description: 'A atração pela liberdade e a necessidade de criar regras internas estritas.',
   },
   {
@@ -178,7 +178,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'trading_zone_book',
     durationSeconds: 1935,
     formattedDuration: '32:15',
-    sourceUri: '03.Assumir.responsabilidade.mp3',
+    sourceUri: 'Trading-in-the-Zone_Mark-Douglas/md-03.Assumir.responsabilidade.mp3',
     description: 'Moldar seu ambiente mental e assumir a responsabilidade total de cada clique.',
   },
   {
@@ -189,7 +189,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'trading_zone_book',
     durationSeconds: 895,
     formattedDuration: '14:55',
-    sourceUri: '04.Consistencia.-.um.estado.mental.mp3',
+    sourceUri: 'Trading-in-the-Zone_Mark-Douglas/md-04.Consistencia.-.um.estado.mental.mp3',
     description: 'Entendendo o risco e o alinhamento de crenças para não hesitar.',
   },
   {
@@ -200,7 +200,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'trading_zone_book',
     durationSeconds: 1570,
     formattedDuration: '26:10',
-    sourceUri: '05.A.dinamica.da.percepcao.mp3',
+    sourceUri: 'Trading-in-the-Zone_Mark-Douglas/md-05.A.dinamica.da.percepcao.mp3',
     description: 'Depurando seu software mental e a relação entre medo e distorção da realidade.',
   },
   {
@@ -211,7 +211,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'trading_zone_book',
     durationSeconds: 2000,
     formattedDuration: '33:20',
-    sourceUri: '06.A.perspectiva.do.mercado.mp3',
+    sourceUri: 'Trading-in-the-Zone_Mark-Douglas/md-06.A.perspectiva.do.mercado.mp3',
     description: 'O princípio da incerteza e a característica mais fundamental do mercado.',
   },
   {
@@ -222,7 +222,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'trading_zone_book',
     durationSeconds: 3683,
     formattedDuration: '1:01:23',
-    sourceUri: '07.A.essencia.do.trader.mp3',
+    sourceUri: 'Trading-in-the-Zone_Mark-Douglas/md-07.A.essencia.do.trader.mp3',
     description: 'Pensar em termos de probabilidades e o modelo dos cassinos.',
   },
   {
@@ -233,7 +233,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'trading_zone_book',
     durationSeconds: 1550,
     formattedDuration: '25:50',
-    sourceUri: '08.Trabalhar.com.suas.conviccoes.mp3',
+    sourceUri: 'Trading-in-the-Zone_Mark-Douglas/md-08.Trabalhar.com.suas.conviccoes.mp3',
     description: 'Definir o problema e gerenciar crenças conflitantes.',
   },
   {
@@ -244,7 +244,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'trading_zone_book',
     durationSeconds: 1820,
     formattedDuration: '30:20',
-    sourceUri: '09.A.natureza.das.conviccoes.mp3',
+    sourceUri: 'Trading-in-the-Zone_Mark-Douglas/md-09.A.natureza.das.conviccoes.mp3',
     description: 'As origens de uma convicção e como ela impacta nossa vida.',
   },
   {
@@ -255,7 +255,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'trading_zone_book',
     durationSeconds: 2925,
     formattedDuration: '48:45',
-    sourceUri: '10.O.impacto.das.conviccoes.mp3',
+    sourceUri: 'Trading-in-the-Zone_Mark-Douglas/md-10.O.impacto.das.conviccoes.mp3',
     description: 'A autoavaliação primária e a eliminação do medo de errar.',
   },
   {
@@ -266,7 +266,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'trading_zone_book',
     durationSeconds: 2550,
     formattedDuration: '42:30',
-    sourceUri: '11.Pensar.como.um.trader.mp3',
+    sourceUri: 'Trading-in-the-Zone_Mark-Douglas/md-11.Pensar.como.um.trader.mp3',
     description: 'O estágio mecânico, a regra do stop loss e a aceitação do risco.',
   },
   {
@@ -277,7 +277,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'trading_zone_book',
     durationSeconds: 1840,
     formattedDuration: '30:40',
-    sourceUri: '12.Aprenda.com.os.cassinos.mp3',
+    sourceUri: 'Trading-in-the-Zone_Mark-Douglas/md-12.Aprenda.com.os.cassinos.mp3',
     description: 'Como uma vantagem matemática de 55% gera consistência milionária a longo prazo.',
   },
 
@@ -290,7 +290,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 1200,
     formattedDuration: '20:00',
-    sourceUri: '0.Instalacao.do.Gatilho.de.Auto-Hipnose.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-0.Instalacao_do_Gatilho_de_Auto-Hipnose.mp3',
     description: 'Sessão fundamental para instalar os âncoras e gatilhos de transe consciente para uso diário.',
   },
   {
@@ -301,7 +301,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 840,
     formattedDuration: '14:00',
-    sourceUri: 'AH-Para.Traders.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-Para_Traders.mp3',
     description: 'Reprogramação subconsciente focada exclusivamente na disciplina e tranquilidade operacional.',
   },
   {
@@ -312,7 +312,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 780,
     formattedDuration: '13:00',
-    sourceUri: 'AH-para.fortalecer.a.disciplina.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-para_fortalecer_a_disciplina.mp3',
     description: 'Elimine a autossabotagem e fortaleça o respeito irrestrito ao seu plano de trade.',
   },
   {
@@ -323,7 +323,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 720,
     formattedDuration: '12:00',
-    sourceUri: 'AH-para.dominar.a.ansiedade.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-para_dominar_a_ansiedade.mp3',
     description: 'Desarme a ansiedade de antecipar entradas ou sair cedo demais das operações vencedoras.',
   },
   {
@@ -334,7 +334,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 750,
     formattedDuration: '12:30',
-    sourceUri: 'AH-para.dominar.o.medo.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-para_dominar_o_medo.mp3',
     description: 'Supere o medo de clicar após uma sequência de stops e restabeleça a frieza técnica.',
   },
   {
@@ -345,7 +345,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 690,
     formattedDuration: '11:30',
-    sourceUri: 'AH-para.melhorar.a.concentracao_guilherme.cardoso.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-para_melhorar_a_concentracao_guilherme_cardoso.mp3',
     description: 'Aumente o estado de alerta e a velocidade de leitura do mercado sem sobrecarga mental.',
   },
   {
@@ -356,7 +356,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 810,
     formattedDuration: '13:30',
-    sourceUri: 'AH-para.fortalecer.a.sua.identidade_guilherme.cardoso.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-para_fortalecer_a_sua_identidade_guilherme_cardoso.mp3',
     description: 'Alinhe seu subconsciente com a certeza e merecimento da abundância e dos ganhos consistentes.',
   },
   {
@@ -367,7 +367,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 900,
     formattedDuration: '15:00',
-    sourceUri: 'AH-para.dormir.melhor_guilherme.cardoso.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-para_dormir_melhor_guilherme_cardoso.mp3',
     description: 'Indução suave para um sono profundo que restaura sua clareza cognitiva para o dia seguinte.',
   },
   {
@@ -378,7 +378,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 660,
     formattedDuration: '11:00',
-    sourceUri: 'AH-para.ser.mais.eficiente.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-para_ser_mais_eficiente.mp3',
     description: 'Condicionamento mental para otimizar suas rotinas diárias e estudos pós-mercado.',
   },
   {
@@ -389,7 +389,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 600,
     formattedDuration: '10:00',
-    sourceUri: 'AH-Gerenciando.Emocoes.Negativas.Imediatas.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-Gerenciando_Emocoes_Negativas_Imediatas.mp3',
     description: 'Intervenção rápida para bloquear raiva, frustração ou desespero antes de clicar compulsivamente.',
   },
   {
@@ -400,7 +400,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 840,
     formattedDuration: '14:00',
-    sourceUri: 'AH-Ativando.a.Prosperidade.e.Abundancia.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-Ativando_a_Prosperidade_e_Abundancia.mp3',
     description: 'Reprograme medos inconscientes de ganhar dinheiro ou sabotar contas lucrativas.',
   },
   {
@@ -411,7 +411,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 780,
     formattedDuration: '13:00',
-    sourceUri: 'AH-criando.o.sucesso.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-criando_o_sucesso.mp3',
     description: 'Visualize suas metas atingidas com riqueza de detalhes sensoriais e emocionais.',
   },
   {
@@ -422,7 +422,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 750,
     formattedDuration: '12:30',
-    sourceUri: 'AH-Perdoando.a.Si.Mesmo.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-Perdoando_a_Si_Mesmo.mp3',
     description: 'Liberte a culpa de dias ruins de loss e encare cada pregão como uma folha em branco.',
   },
   {
@@ -433,7 +433,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 720,
     formattedDuration: '12:00',
-    sourceUri: 'AH-Liberando.o.Perdao.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-Liberando_o_Perdao.mp3',
     description: 'Dissolva ressentimentos que consomem sua energia vital e prejudicam suas decisões.',
   },
   {
@@ -444,7 +444,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 650,
     formattedDuration: '10:50',
-    sourceUri: 'AH-liberando.sua.criatividade.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-liberando_sua_criatividade.mp3',
     description: 'Desbloqueie novas ideias para aperfeiçoar seu operacional e gerenciamento de risco.',
   },
   {
@@ -455,7 +455,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 700,
     formattedDuration: '11:40',
-    sourceUri: 'AH-para.Controlar.a.Dor.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-para_Controlar_a_Dor.mp3',
     description: 'Alívio para dores nas costas, ombros e cabeça causadas por longas horas diante das telas.',
   },
   {
@@ -466,7 +466,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 600,
     formattedDuration: '10:00',
-    sourceUri: 'AH-para.Reforco.da.Memoria.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-para_Reforco_da_Memoria.mp3',
     description: 'Fixe no subconsciente os padrões de candles, gatilhos de entrada e contextos de mercado.',
   },
   {
@@ -477,7 +477,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 540,
     formattedDuration: '09:00',
-    sourceUri: 'AH-Despertando.na.Hora.Certa.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-Despertando_na_Hora_Certa.mp3',
     description: 'Programe seu relógio biológico para acordar disposto e pronto antes da abertura do mercado.',
   },
   {
@@ -488,7 +488,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 900,
     formattedDuration: '15:00',
-    sourceUri: 'AH-chegando.no.estado.de.esdaile.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-chegando_no_estado_de_esdaile.mp3',
     description: 'Alcance o estado mais profundo de relaxamento e anestesia física para regeneração completa.',
   },
   {
@@ -499,8 +499,30 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'auto_hypnosis',
     durationSeconds: 880,
     formattedDuration: '14:40',
-    sourceUri: 'autoterapia.ativando.a.sua.melhor.versao.mp3',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-00.autoterapia-ativando-a-sua-melhor-versao.mp3',
     description: 'Conecte-se com o seu arquétipo de trader experiente, consistente e inabalável.',
+  },
+  {
+    id: 'track-ah-devolvendo-pais',
+    title: 'Devolvendo o Peso dos Pais',
+    subtitle: 'Libertação de Padrões Familiares',
+    author: 'Guilherme Cardoso',
+    category: 'auto_hypnosis',
+    durationSeconds: 1020,
+    formattedDuration: '17:00',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-Devolvendo_o_Peso_dos_Pais.mp3',
+    description: 'Descarregue expectativas inconscientes herdadas e opere o mercado com autonomia e leveza.',
+  },
+  {
+    id: 'track-ah-infancia',
+    title: 'Voltando a um Momento Feliz da Infância',
+    subtitle: 'Resgate da Autoestima e Segurança',
+    author: 'Guilherme Cardoso',
+    category: 'auto_hypnosis',
+    durationSeconds: 420,
+    formattedDuration: '07:00',
+    sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-Voltando_a_Um_Momento_Feliz_da_Infancia.mp3',
+    description: 'Acesse estados puros de segurança, curiosidade e confiança interior para ancorar antes do pregão.',
   },
 
   // 7. Consistência Emocional (Thais)
@@ -512,7 +534,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'emotional_consistency',
     durationSeconds: 530,
     formattedDuration: '08:50',
-    sourceUri: 'Thais-1.Privacao.Emocional.mp3',
+    sourceUri: 'Consistencia_Emocional_Mercado-Thais/Thais-1.Privacao.Emocional.mp3',
     description: 'Compreenda como carências emocionais e busca inconsciente por preenchimento afetam suas decisões e entradas no mercado.',
   },
   {
@@ -523,7 +545,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'emotional_consistency',
     durationSeconds: 417,
     formattedDuration: '06:57',
-    sourceUri: 'Thais-2.Abandono.mp3',
+    sourceUri: 'Consistencia_Emocional_Mercado-Thais/Thais-2.Abandono.mp3',
     description: 'A ferida de abandono, o medo de ficar de fora dos movimentos (FOMO) e a busca ansiosa por validação nos trades.',
   },
   {
@@ -534,7 +556,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'emotional_consistency',
     durationSeconds: 780,
     formattedDuration: '13:00',
-    sourceUri: 'Thais-3.Desconfianca.mp3',
+    sourceUri: 'Consistencia_Emocional_Mercado-Thais/Thais-3.Desconfianca.mp3',
     description: 'Superando a desconfiança no seu método, nas leituras de fluxo/gráfico e na sua própria capacidade de execução precisa.',
   },
   {
@@ -545,7 +567,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'emotional_consistency',
     durationSeconds: 474,
     formattedDuration: '07:54',
-    sourceUri: 'Thais-4.Isolamento.mp3',
+    sourceUri: 'Consistencia_Emocional_Mercado-Thais/Thais-4.Isolamento.mp3',
     description: 'A solidão da tela de operações, a sensação de incompreensão e como sustentar a autonomia sem adoecer mentalmente.',
   },
   {
@@ -556,7 +578,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'emotional_consistency',
     durationSeconds: 612,
     formattedDuration: '10:12',
-    sourceUri: 'Thais-5.Vergonha.mp3',
+    sourceUri: 'Consistencia_Emocional_Mercado-Thais/Thais-5.Vergonha.mp3',
     description: 'Ressignificando a dor do erro e do stop loss, libertando sua mente do peso do julgamento próprio e de terceiros.',
   },
   {
@@ -567,7 +589,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'emotional_consistency',
     durationSeconds: 800,
     formattedDuration: '13:20',
-    sourceUri: 'Thais-6.Fracasso.mp3',
+    sourceUri: 'Consistencia_Emocional_Mercado-Thais/Thais-6.Fracasso.mp3',
     description: 'Desarmando o esquema de fracasso: o loss como custo operacional e métrica probabilística, nunca como identidade pessoal.',
   },
   {
@@ -578,7 +600,7 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     category: 'emotional_consistency',
     durationSeconds: 851,
     formattedDuration: '14:11',
-    sourceUri: 'Thais-O.Luto.Invisivel.do.Trader.mp3',
+    sourceUri: 'Consistencia_Emocional_Mercado-Thais/Thais-O.Luto.Invisivel.do.Trader.mp3',
     description: 'O processo silencioso de luto por tempo, expectativas e capital deixados para trás, e a cura mental para renascer consistente.',
   },
 ];

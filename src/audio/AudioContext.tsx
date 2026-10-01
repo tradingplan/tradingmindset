@@ -4,7 +4,7 @@ import Constants from 'expo-constants';
 import { createAudioPlayer, setAudioModeAsync, AudioPlayer, AudioStatus } from 'expo-audio';
 import { AudioTrack } from '../types';
 import { AUDIO_CATALOG } from './audioCatalog';
-import { getPlayableTrackUri, cleanInvalidCachedFiles, getRemoteTrackUrl } from './offlineAudioStore';
+import { getPlayableTrackUri, cleanInvalidCachedFiles } from './offlineAudioStore';
 
 interface AudioContextType {
   currentTrack: AudioTrack | null;
