@@ -31,9 +31,9 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "updates": {
-      "url": "https://u.expo.dev/c82bbe26-ef76-445c-aad0-23caa8146448"
-    },
+//    "updates": {
+//      "url": "https://u.expo.dev/c82bbe26-ef76-445c-aad0-23caa8146448"
+//    },
     "runtimeVersion": {
       "policy": "appVersion"
     },
@@ -54,7 +54,6 @@
           "color": "#06B6D4"
         }
       ],
-      "expo-updates",
       "expo-font",
       "expo-asset"
     ],
