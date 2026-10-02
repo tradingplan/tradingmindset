@@ -4,13 +4,13 @@ export const AUDIO_CATALOG: AudioTrack[] = [
   // 1. Preparação Matinal & Blindagem Mental
   {
     id: 'track-pre-1',
-    title: 'O STOP Não é o Problema (IA)',
-    subtitle: 'Reprogramação de Identidade Vencedora',
-    author: 'Trading Mindset',
+    title: 'O STOP Não é o Problema (Aurora Trader)',
+    subtitle: 'Otimizado para o Setup Sniper',
+    author: 'Aurora Trader',
     category: 'pre_market',
-    durationSeconds: 184,
-    formattedDuration: '03:04',
-    sourceUri: 'Identidade/id_O.Stop.nao.eh.o.problema_IA.mp3',
+    durationSeconds: 180,
+    formattedDuration: '03:00',
+    sourceUri: 'Identidade/O.Stop.nao.eh.o.problema_Aurora-A.Narradora.Noturna_v1.mp3',
     description: 'Compreenda a natureza do stop loss como ferramenta de proteção patrimonial, e não como falha pessoal.',
   },
   {
@@ -34,6 +34,18 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     formattedDuration: '14:00',
     sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-Para_Traders.mp3',
     description: 'Reprogramação subconsciente focada exclusivamente na disciplina e tranquilidade operacional.',
+  },
+
+  {
+    id: 'track-pre-4',
+    title: 'O STOP Não é o Problema (Paulo Becker)',
+    subtitle: 'Como Travar o Cérebro no Loss',
+    author: 'Paulo Becker',
+    category: 'pre_market',
+    durationSeconds: 174,
+    formattedDuration: '02:54',
+    sourceUri: 'Identidade/O.Stop.nao.eh.o.problema_Paulo-Becker_v1.mp3',
+    description: 'Compreenda a natureza do stop loss como ferramenta de proteção patrimonial, e não como falha pessoal.',
   },
 
   // 2. Frequências Foco & Binaural Beats (Geradas nativamente pelo sintetizador do app)
@@ -110,6 +122,28 @@ export const AUDIO_CATALOG: AudioTrack[] = [
     formattedDuration: '10:00',
     sourceUri: 'Autohipnose_Guilherme-Cardoso/AH-Gerenciando_Emocoes_Negativas_Imediatas.mp3',
     description: 'Intervenção rápida para bloquear raiva, frustração ou desespero antes de clicar compulsivamente.',
+  },
+  {
+    id: 'track-loss-4',
+    title: 'Perder do Jeito Certo',
+    subtitle: 'Como Travar o Cérebro no Loss',
+    author: 'Aurora & Neurociência (Claude)',
+    category: 'post_loss',
+    durationSeconds: 520,
+    formattedDuration: '08:40',
+    sourceUri: 'Insights/Perder-do-Jeito-Certo_Aurora-A-Narradora-Noturna_v1.mp3',
+    description: 'Os mecanismos químicos do cérebro no momento da dor da perda e como abortar a espiral do tilt.',
+  },
+  {
+    id: 'track-loss-5',
+    title: 'Dica para Melhorar Resultados',
+    subtitle: 'Controle Comportamental Imediato',
+    author: 'Paulo Becker',
+    category: 'post_loss',
+    durationSeconds: 425,
+    formattedDuration: '07:05',
+    sourceUri: 'Insights/A-Escadinha_Paulo-Becker_v1.mp3',
+    description: 'Pequenos resultados com consistência e disciplina.',
   },
 
   // 4. Descompressão Pós-Mercado & Sono Reparador

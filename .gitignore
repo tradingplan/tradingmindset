@@ -23,6 +23,7 @@ yarn-error.log*
 *.pem
 .vscode/
 .idea/
+*.code-workspace
 
 # Large audio files (hosted on Supabase Storage / GitHub Releases)
 audios/

@@ -194,7 +194,7 @@ Para instalar o aplicativo diretamente no celular como um arquivo `.apk` indepen
 
 ### Configurações Realizadas
 1. **`app.json`:**
-   - Pacote Android configurado: `"package": "com.tradingplan.tradingmindset"`
+   - Pacote Android configurado: `"package": "br.com.tradingplan.tradingmindset"`
    - Permissões de reprodução em segundo plano configuradas.
 2. **`eas.json`:**
    - Perfil `preview` configurado com `"buildType": "apk"`.
